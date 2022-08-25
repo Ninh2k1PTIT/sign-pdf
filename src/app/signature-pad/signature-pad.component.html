@@ -1,0 +1,69 @@
+<div class="row">
+  <div class="col-6 control-section">
+    <div id="signature-toolbar-control">
+      <ejs-toolbar
+        id="toolbar"
+        (created)="onCreate($event)"
+        (clicked)="clicked($event)"
+        width="100%"
+      >
+        <e-items>
+          <e-item
+            text=" "
+            prefixIcon="e-icons e-undo"
+            tooltipText="Hoàn tác (Ctrl + Z)"
+          ></e-item>
+          <e-item
+            text=" "
+            prefixIcon="e-icons e-redo"
+            tooltipText="Làm lại (Ctrl + Y)"
+          ></e-item>
+          <e-item type="Separator"></e-item>
+          <e-item
+            tooltipText="Save (Ctrl + S)"
+            type="Button"
+            template='<button id="save-option"></button>'
+          >
+          </e-item>
+          <e-item type="Separator"></e-item>
+          <e-item
+            tooltipText="Màu"
+            template='<input id="stroke-color" type="color"/>'
+          >
+          </e-item>
+          <e-item type="Separator"></e-item>
+          <!-- <e-item
+            tooltipText="Background Color"
+            type="Input"
+            template='<input id="bg-color" type="color"/>'
+          ></e-item> -->
+          <e-item type="Separator"></e-item>
+          <e-item
+            tooltipText="Nét bút"
+            type="Input"
+            template='<input id="stroke-width" type="text"/>'
+          ></e-item>
+          <e-item type="Separator"></e-item>
+          <e-item
+            text=" "
+            prefixIcon="e-icons e-trash"
+            tooltipText="Xóa"
+          ></e-item>
+        </e-items>
+      </ejs-toolbar>
+      <div id="signature-control">
+        <canvas
+          ejs-signature
+          #signature
+          id="signature"
+          [maxStrokeWidth]="strokeWidth"
+          style="height: 100%; width: 100%"
+          (change)="change()"
+        ></canvas>
+      </div>
+    </div>
+  </div>
+  <div class="col-6">
+    <img style="width: 100%; height: 100%;" [src]="thumbnails" alt="" />
+  </div>
+</div>

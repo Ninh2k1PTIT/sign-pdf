@@ -1,0 +1,21 @@
+.page-item {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.accordion-body {
+  text-align: center;
+  padding: 0;
+  background-color: #cdd3d6;
+}
+
+.file-name {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  display: inline-block;
+}
+
+.selected {
+  border: 5px solid rgb(27, 21, 21);
+}
