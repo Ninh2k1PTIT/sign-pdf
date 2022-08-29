@@ -26,11 +26,11 @@
           >
           </e-item>
           <e-item type="Separator"></e-item>
-          <e-item
+          <!-- <e-item
             tooltipText="Màu"
             template='<input id="stroke-color" type="color"/>'
           >
-          </e-item>
+          </e-item> -->
           <e-item type="Separator"></e-item>
           <!-- <e-item
             tooltipText="Background Color"
@@ -62,8 +62,28 @@
         ></canvas>
       </div>
     </div>
+
+    <div class="row">
+      <div class="col stroke-settings">
+        <p>Màu</p>
+        <div
+          *ngFor="let x of colorPicker"
+          class="color-picker-border"
+          [ngStyle]="{
+            border: signature.strokeColor === x ? '1px solid ' + x : ''
+          }"
+          (click)="
+          chooseColor(x)"
+        >
+          <div
+            class="color-picker-content"
+            [ngStyle]="{ 'background-color': x }"
+          ></div>
+        </div>
+      </div>
+    </div>
   </div>
   <div class="col-6">
-    <img style="width: 100%; height: 100%;" [src]="thumbnails" alt="" />
+    <img style="width: 100%; height: 100%" [src]="thumbnails" alt="" />
   </div>
 </div>

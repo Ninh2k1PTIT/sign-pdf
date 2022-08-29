@@ -78,6 +78,8 @@ export class AppComponent {
     let source = forkJoin(observables);
     source.subscribe((tags) => {
       for (let [index, value] of tags.entries()) {
+        console.log(index);
+        
         value.id = index.toString();
         value.style.marginTop = '10px';
         value.addEventListener('click', (ev) => {
@@ -101,7 +103,7 @@ export class AppComponent {
       switchMap((pdf) => from(pdf.getPage(pageNumber))),
       switchMap((page) => {
         const canvas = document.createElement('canvas');
-        const viewport = page.getViewport({ scale: 0.2 });
+        const viewport = page.getViewport({ scale: 0.1 });
         canvas.height = viewport.height;
         canvas.width = viewport.width;
         return from(
@@ -112,6 +114,8 @@ export class AppComponent {
         ).pipe(map(() => canvas));
       }),
       switchMap((canvas) => {
+        console.log(canvas);
+        
         return new Observable<HTMLCanvasElement>((observer) => {
           observer.next(canvas);
           observer.complete();

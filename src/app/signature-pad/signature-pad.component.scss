@@ -258,3 +258,31 @@
 }
 
 /* custom code end */
+.stroke-settings {
+  margin-top: 10px;
+  display: flex;
+}
+
+.color-picker-border {
+  // border: 1px solid blue;
+  background-color: #fff !important;
+  width: 24px;
+  height: 24px;
+  margin: 0 6px;
+  border-radius: 50%;
+  // width: 18px;
+  // height: 18px;
+  // margin: 0 9px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: initial;
+}
+
+.color-picker-content {
+  background-color: blue;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+}

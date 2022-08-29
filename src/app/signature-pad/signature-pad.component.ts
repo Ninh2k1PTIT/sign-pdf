@@ -48,6 +48,8 @@ export class SignaturePadComponent {
 
   public thumbnails: string = '';
 
+  public colorPicker = ['red', 'green', 'blue'];
+
   public change(): void {
     let signature: Signature = getComponent(
       document.getElementById('signature')!,
@@ -306,5 +308,9 @@ export class SignaturePadComponent {
     } else {
       redoButton.disabled = true;
     }
+  }
+
+  chooseColor(color: string) {
+    this.signature.strokeColor = color;
   }
 }
