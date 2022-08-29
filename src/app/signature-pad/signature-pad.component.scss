@@ -264,15 +264,11 @@
 }
 
 .color-picker-border {
-  // border: 1px solid blue;
   background-color: #fff !important;
   width: 24px;
   height: 24px;
   margin: 0 6px;
   border-radius: 50%;
-  // width: 18px;
-  // height: 18px;
-  // margin: 0 9px;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -285,4 +281,22 @@
   border-radius: 50%;
   width: 18px;
   height: 18px;
+}
+
+.width-selector-border {
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  margin-left: 12px;
+  cursor: pointer;
+  background-color: #fff;
+  border: 1px solid #d9dade;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.width-selector-content {
+  border-radius: 50%;
+  background-color: #000;
 }

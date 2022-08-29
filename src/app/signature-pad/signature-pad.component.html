@@ -18,7 +18,7 @@
             prefixIcon="e-icons e-redo"
             tooltipText="Làm lại (Ctrl + Y)"
           ></e-item>
-          <e-item type="Separator"></e-item>
+          <!-- <e-item type="Separator"></e-item>
           <e-item
             tooltipText="Save (Ctrl + S)"
             type="Button"
@@ -26,28 +26,29 @@
           >
           </e-item>
           <e-item type="Separator"></e-item>
-          <!-- <e-item
+          <e-item
             tooltipText="Màu"
             template='<input id="stroke-color" type="color"/>'
           >
-          </e-item> -->
+          </e-item>
           <e-item type="Separator"></e-item>
-          <!-- <e-item
+          <e-item
             tooltipText="Background Color"
             type="Input"
             template='<input id="bg-color" type="color"/>'
-          ></e-item> -->
+          ></e-item>
           <e-item type="Separator"></e-item>
           <e-item
             tooltipText="Nét bút"
             type="Input"
             template='<input id="stroke-width" type="text"/>'
-          ></e-item>
+          ></e-item> -->
           <e-item type="Separator"></e-item>
           <e-item
             text=" "
             prefixIcon="e-icons e-trash"
             tooltipText="Xóa"
+            align="right"
           ></e-item>
         </e-items>
       </ejs-toolbar>
@@ -56,7 +57,7 @@
           ejs-signature
           #signature
           id="signature"
-          [maxStrokeWidth]="strokeWidth"
+          [maxStrokeWidth]="1"
           style="height: 100%; width: 100%"
           (change)="change()"
         ></canvas>
@@ -67,17 +68,35 @@
       <div class="col stroke-settings">
         <p>Màu</p>
         <div
-          *ngFor="let x of colorPicker"
+          *ngFor="let color of colorPicker"
           class="color-picker-border"
           [ngStyle]="{
-            border: signature.strokeColor === x ? '1px solid ' + x : ''
+            border: signature.strokeColor === color ? '1px solid ' + color : ''
           }"
-          (click)="
-          chooseColor(x)"
+          (click)="chooseColor(color)"
         >
           <div
             class="color-picker-content"
-            [ngStyle]="{ 'background-color': x }"
+            [ngStyle]="{ 'background-color': color }"
+          ></div>
+        </div>
+      </div>
+      <div class="col stroke-settings">
+        <p>Nét bút</p>
+        <div
+          *ngFor="let width of widthSelector"
+          class="width-selector-border"
+          [ngStyle]="{
+            'border-color': signature.maxStrokeWidth == width ? 'black' : ''
+          }"
+          (click)="chooseWidth(width)"
+        >
+          <div
+            class="width-selector-content"
+            [ngStyle]="{
+              width: width * 2.5 + 'px',
+              height: width * 2.5 + 'px'
+            }"
           ></div>
         </div>
       </div>
