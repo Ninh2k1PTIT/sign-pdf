@@ -14,6 +14,10 @@ import { Signature } from '@syncfusion/ej2-inputs';
 export class SignaturePadComponent {
   @ViewChild('signature') signature: SignatureComponent | any;
   public thumbnails: string = '';
+  image = '';
+  public color1: string = '#160ade';
+  today = new Date();
+  fontType = 'open sans bold';
   public colorPicker = ['#000000', 'red', 'blue'];
   public widthSelector = [1, 2, 3];
 
@@ -49,6 +53,24 @@ export class SignaturePadComponent {
     }
   }
 
+  // đổi font chữ
+  changeFont(event: any) {
+    console.log(event);
+    console.log('Font: ' + this.fontType);
+    document.getElementById('output-text')!.style.fontFamily = this.fontType;
+    //document.getElementById('sigText-KySo').style.fontFamily = this.fontType;
+  }
+  inputImage(event: any) {
+    if (typeof FileReader !== 'undefined') {
+      const reader = new FileReader();
+      reader.readAsDataURL(event.target.files[0]);
+      reader.onload = (e: any) => {
+        this.image = e.target.result;
+        console.log(this.image);
+        console.log(this.image.split(',')[1]);
+      };
+    }
+  }
   clicked(args: ClickEventArgs): void {
     if (this.signature.disabled && args.item.tooltipText != 'Disabled') {
       return;

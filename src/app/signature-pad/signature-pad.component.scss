@@ -300,3 +300,11 @@
   border-radius: 50%;
   background-color: #000;
 }
+.logo {
+  position: absolute;
+  top: calc(40% - 120px);
+  // left: calc(50% - 29px);
+  width: 58px;
+  opacity: 0.2;
+  height: 58px;
+}

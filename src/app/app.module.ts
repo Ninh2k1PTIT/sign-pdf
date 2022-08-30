@@ -13,6 +13,7 @@ import { ColorPickerModule, UploaderModule, SignatureModule, TextBoxModule, Nume
 import { TabModule, ToolbarModule } from '@syncfusion/ej2-angular-navigations';
 import { DialogModule } from '@syncfusion/ej2-angular-popups';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgSelectModule } from '@ng-select/ng-select';
 
 @NgModule({
   declarations: [
@@ -37,6 +38,7 @@ import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
     ButtonModule,
     NumericTextBoxModule,
     NgbModule,
+    NgSelectModule
   ],
   providers: [],
   bootstrap: [AppComponent]
