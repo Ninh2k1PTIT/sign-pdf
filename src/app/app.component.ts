@@ -7,7 +7,7 @@ import {
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { PdfLoadedEvent } from 'ngx-extended-pdf-viewer';
 import { getDocument, GlobalWorkerOptions, version } from 'pdfjs-dist';
-import { forkJoin, from, map, Observable, switchMap, take } from 'rxjs';
+import { forkJoin, from, map } from 'rxjs';
 
 @Component({
   selector: 'app-root',
@@ -69,59 +69,54 @@ export class AppComponent {
   }
 
   pdfLoaded(pdf: PdfLoadedEvent) {
-    // this.d1.nativeElement.innerHTML = '';
     this.totalPages = pdf.pagesCount;
     this.pageNumber = 1;
-    let observables = [];
-    for (let i = 0; i < this.totalPages; i++)
-      observables.push(this.getPdfThumbnail(this.src, i + 1));
-    let source = forkJoin(observables);
-    source.subscribe((tags) => {
-      for (let [index, value] of tags.entries()) {
-        console.log(index);
-        
-        value.id = index.toString();
-        value.style.marginTop = '10px';
-        value.addEventListener('click', (ev) => {
-          const target = ev.target as HTMLTextAreaElement;
-          this.pageNumber = parseInt(target.id) + 1;
-          this.thumbnailsStyleChange(this.pageNumber);
-        });
-        this.d1.nativeElement.appendChild(value);
-        let foo = document.createElement('div');
-        foo.innerHTML = index + 1 + '';
-        this.d1.nativeElement.appendChild(foo);
-      }
-      this.previousItem = document.getElementById('0')!;
-      this.previousItem.className = 'selected';
-    });
+    this.getPdfThumbnail(this.src, this.totalPages);
   }
 
-  getPdfThumbnail(pdfUrl: any, pageNumber: number) {
-    return from(getDocument(pdfUrl).promise).pipe(
-      take(1),
-      switchMap((pdf) => from(pdf.getPage(pageNumber))),
-      switchMap((page) => {
-        const canvas = document.createElement('canvas');
-        const viewport = page.getViewport({ scale: 0.1 });
-        canvas.height = viewport.height;
-        canvas.width = viewport.width;
-        return from(
-          page.render({
-            canvasContext: canvas.getContext('2d') as CanvasRenderingContext2D,
-            viewport,
-          }).promise
-        ).pipe(map(() => canvas));
-      }),
-      switchMap((canvas) => {
-        console.log(canvas);
-        
-        return new Observable<HTMLCanvasElement>((observer) => {
-          observer.next(canvas);
-          observer.complete();
+  getPdfThumbnail(pdfUrl: any, totalPage: number) {
+    getDocument(pdfUrl).promise.then((pdf) => {
+      let pagesPdf = [];
+      for (let i = 0; i < totalPage; i++) {
+        pagesPdf.push(pdf.getPage(i + 1));
+      }
+      forkJoin(pagesPdf).subscribe((pages) => {
+        let canvasTags = [];
+        for (let page of pages) {
+          const canvas = document.createElement('canvas');
+          const viewport = page.getViewport({ scale: 0.13 });
+          canvas.height = viewport.height;
+          canvas.width = viewport.width;
+          canvasTags.push(
+            from(
+              page.render({
+                canvasContext: canvas.getContext(
+                  '2d'
+                ) as CanvasRenderingContext2D,
+                viewport,
+              }).promise
+            ).pipe(map(() => canvas))
+          );
+        }
+        forkJoin(canvasTags).subscribe((tags) => {
+          for (let [index, value] of tags.entries()) {
+            value.id = index.toString();
+            value.style.marginTop = '10px';
+            value.addEventListener('click', (ev) => {
+              const target = ev.target as HTMLTextAreaElement;
+              this.pageNumber = parseInt(target.id) + 1;
+              this.thumbnailsStyleChange(this.pageNumber);
+            });
+            this.d1.nativeElement.appendChild(value);
+            let foo = document.createElement('div');
+            foo.innerHTML = index + 1 + '';
+            this.d1.nativeElement.appendChild(foo);
+          }
+          this.previousItem = document.getElementById('0')!;
+          this.previousItem.className = 'selected';
         });
-      })
-    );
+      });
+    });
   }
 
   fileChange(fileIndex: number) {
