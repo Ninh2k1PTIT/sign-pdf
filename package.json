@@ -28,7 +28,6 @@
     "@syncfusion/ej2-angular-popups": "^20.2.43",
     "bootstrap": "^5.1.3",
     "ngx-extended-pdf-viewer": "^15.0.0-alpha.2",
-    "pdfjs-dist": "^2.15.349",
     "rxjs": "~7.5.0",
     "tslib": "^2.3.0",
     "zone.js": "~0.11.4"

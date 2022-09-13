@@ -1,3 +1,14 @@
+<div class="row justify-content-center">
+  <div class="col"></div>
+  <div class="col">
+    <div class="d-flex justify-content-center align-items-center">
+      <button type="button" class="btn" (click)="previousPage()">-</button>
+      {{ pageNumber + "/" + totalPages }}
+      <button type="button" class="btn" (click)="nextPage()">+</button>
+    </div>
+  </div>
+  <div class="col"></div>
+</div>
 <div class="row p-2">
   <div class="col-2">
     <div class="mb-3">
@@ -5,26 +16,9 @@
       <input type="file" (change)="inputFile($event)" accept=".pdf" multiple />
     </div>
     <div class="mb-3">
-      <h5>Trang</h5>
-      <button type="button" class="btn btn-primary" (click)="previousPage()">
-        -
-      </button>
-      {{ pageNumber + "/" + totalPages }}
-      <button type="button" class="btn btn-primary" (click)="nextPage()">
-        +
-      </button>
-    </div>
-    <div class="mb-3">
       <h5>Tỉ lệ</h5>
       <div class="input-group mb-3">
-        <!-- <input type="number" [value]="scale" min="10" max="200" class="form-control" />
-        <span class="input-group-text" id="basic-addon2">%</span> -->
-
-        <select
-          class="form-select"
-          aria-label="Default select example"
-          [(ngModel)]="scale"
-        >
+        <select class="form-select" [(ngModel)]="scale">
           <option [value]="item" *ngFor="let item of scaleOptions">
             {{ item }}
           </option>
@@ -37,7 +31,7 @@
       <button
         type="button"
         class="btn btn-primary"
-        (click)="openSignpad(signature)"
+        (click)="openSignaturePad(signature)"
       >
         Tạo chữ ký
       </button>
@@ -54,14 +48,17 @@
           [showToolbar]="false"
           (pdfLoaded)="pdfLoaded($event)"
           backgroundColor="none"
-          (pageChange)="pageChange($event)"
           height="80%"
           [showPropertiesButton]="true"
           [showBorders]="false"
-        ></ngx-extended-pdf-viewer>
+          pageViewMode="single"
+        >
+          ></ngx-extended-pdf-viewer
+        >
       </div>
     </div>
   </div>
+
   <div class="col-2">
     <div class="accordion" id="accordionExample">
       <div *ngFor="let file of files; let i = index" class="accordion-item">
@@ -86,7 +83,21 @@
           data-bs-parent="#accordionExample"
         >
           <div class="accordion-body">
-            <div *ngIf="choice == i" class="page-item" #item></div>
+            <div class="page-item">
+              <div
+                class="thumbnail"
+                *ngFor="let thumbnail of thumbnails; let i = index"
+                (click)="pageNumber = i + 1"
+              >
+                <img
+                  class="thumbnail-img"
+                  [id]="i"
+                  [src]="thumbnail"
+                  [ngClass]="{ selected: pageNumber == i + 1 }"
+                />
+                <div>{{ i + 1 }}</div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
