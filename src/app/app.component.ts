@@ -5,6 +5,7 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { Draggable } from '@syncfusion/ej2-base';
 import { PdfLoadedEvent } from 'ngx-extended-pdf-viewer';
 import { getDocument, GlobalWorkerOptions, version } from 'pdfjs-dist';
 import { forkJoin, from, map, Observable, switchMap, take } from 'rxjs';
@@ -36,11 +37,44 @@ export class AppComponent {
     '300%',
     '400%',
   ];
+  draggable = true;
+  useHandle = false;
+  zIndex: any;
+  zIndexMoving: any;
+  preventDefaultEvent = false;
+  trackPosition = true;
+  position: any;
+  movingOffset = { x: 0, y: 0 };
+  endOffset = { x: 0, y: 0 };
 
   previousItem!: HTMLElement;
+  @ViewChild('ele', { static: false }) element: any;
+  ngAfterViewInit() {
+    // let draggable: Draggable = new Draggable(this.element.nativeElement, {
+    //   clone: false,
+    // });
+  }
 
   constructor(private modalService: NgbModal) {
     GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${version}/pdf.worker.min.js`;
+  }
+
+  onStart(event: any) {
+    console.log('started output:', event);
+  }
+
+  onStop(event: any) {
+    console.log('stopped output:', event);
+  }
+
+  onMoving(event: any) {
+    this.movingOffset.x = event.x;
+    this.movingOffset.y = event.y;
+  }
+
+  onMoveEnd(event: any) {
+    this.endOffset.x = event.x;
+    this.endOffset.y = event.y;
   }
 
   inputFile(ev: any) {
@@ -79,7 +113,7 @@ export class AppComponent {
     source.subscribe((tags) => {
       for (let [index, value] of tags.entries()) {
         console.log(index);
-        
+
         value.id = index.toString();
         value.style.marginTop = '10px';
         value.addEventListener('click', (ev) => {
@@ -115,7 +149,7 @@ export class AppComponent {
       }),
       switchMap((canvas) => {
         console.log(canvas);
-        
+
         return new Observable<HTMLCanvasElement>((observer) => {
           observer.next(canvas);
           observer.complete();

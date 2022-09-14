@@ -34,7 +34,13 @@
 
     <div class="mb-3">
       <h5>Ký số</h5>
-      <button type="button" class="btn btn-primary" (click)="openSignpad(signature)">Tạo chữ ký</button>
+      <button
+        type="button"
+        class="btn btn-primary"
+        (click)="openSignpad(signature)"
+      >
+        Tạo chữ ký
+      </button>
     </div>
   </div>
   <div class="col-8">
@@ -69,9 +75,9 @@
             (click)="fileChange(i)"
             onclick="this.blur()"
           >
-          <div class="file-name">
-            {{ x.name }}
-          </div>
+            <div class="file-name">
+              {{ x.name }}
+            </div>
           </button>
         </h2>
         <div
@@ -91,14 +97,103 @@
 <ng-template #signature let-modal>
   <div class="modal-header">
     <h4 class="modal-title"></h4>
-    <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss('Cross click')"></button>
+    <button
+      type="button"
+      class="btn-close"
+      aria-label="Close"
+      (click)="modal.dismiss('Cross click')"
+    ></button>
   </div>
   <div class="modal-body">
-    <app-signature-pad
-    ></app-signature-pad>
+    <app-signature-pad></app-signature-pad>
   </div>
   <div class="modal-footer">
-    <button type="button" class="btn btn-primary" (click)="modal.close('Close click')">Tạo</button>
-    <button type="button" class="btn btn-outline-dark" (click)="modal.close('Close click')">Đóng</button>
+    <button
+      type="button"
+      class="btn btn-primary"
+      (click)="modal.close('Close click')"
+    >
+      Tạo
+    </button>
+    <button
+      type="button"
+      class="btn btn-outline-dark"
+      (click)="modal.close('Close click')"
+    >
+      Đóng
+    </button>
   </div>
 </ng-template>
+<!-- <div id="container">
+  <div #ele class="element"><p class="drag">Draggable Element</p></div>
+</div> -->
+<!-- <div class="drag-block" ngDraggable>Drag Me</div> -->
+<!-- <div class="row">
+  <div class="col-sm-6">
+    <p><button (click)="draggable = !draggable" class="btn btn-outline-primary">toggle [ngDraggable]</button></p>
+    <p><button (click)="position = position ? undefined : {x: 50, y: 50}" class="btn btn-outline-primary">set [position]</button></p>
+    <p><button (click)="useHandle = !useHandle" class="btn btn-outline-primary">toggle [handle]</button></p>
+    <p><button (click)="zIndex = '1000'" class="btn btn-outline-primary">set [zIndex] to 1000</button></p>
+    <p><button (click)="zIndexMoving = '99999'" class="btn btn-outline-primary">set [zIndexMoving] to 99999</button></p>
+    <p><button (click)="preventDefaultEvent = !preventDefaultEvent" class="btn btn-outline-primary">
+      toggle [preventDefaultEvent]</button>
+    </p>
+    <p><button (click)="trackPosition = !trackPosition" class="btn btn-outline-primary">toggle [trackPosition]</button></p>
+  </div>
+  <div class="col-sm-6">
+    <div *ngIf="useHandle">
+      <div
+        [ngDraggable]="draggable"
+        [position]="position"
+        [zIndex]="zIndex"
+        [zIndexMoving]="zIndexMoving"
+        [handle]="myHandle"
+        [preventDefaultEvent]="preventDefaultEvent"
+        [trackPosition]="trackPosition"
+        class="drag-block-lg">
+        <div #myHandle class="drag-block-handle"> #myHandle </div>
+        <p>[handle]="myHandle"</p>
+        <p>[ngDraggable] = {{ draggable }}</p>
+        <p>[position] = {{ position === undefined ? 'undefined' : position | json }}</p>
+        <p>[zIndex] = {{ zIndex === undefined ? 'undefined' : zIndex }}</p>
+        <p>[zIndexMoving] = {{ zIndexMoving === undefined ? 'undefined' : zIndexMoving }}</p>
+        <p>[preventDefaultEvent] = {{ preventDefaultEvent }}</p>
+        <p>[trackPosition] = {{ trackPosition }}</p>
+      </div>
+    </div>
+    <div *ngIf="!useHandle">
+      <div
+        [ngDraggable]="draggable"
+        [position]="position"
+        [zIndex]="zIndex"
+        [zIndexMoving]="zIndexMoving"
+        [preventDefaultEvent]="preventDefaultEvent"
+        [trackPosition]="trackPosition"
+        class="drag-block-lg">
+        <p>[ngDraggable] = {{ draggable }}</p>
+        <p>[position] = {{ position === undefined ? 'undefined' : position | json }}</p>
+        <p>[zIndex] = {{ zIndex === undefined ? 'undefined' : zIndex }}</p>
+        <p>[zIndexMoving] = {{ zIndexMoving === undefined ? 'undefined' : zIndexMoving }}</p>
+        <p>[preventDefaultEvent] = {{ preventDefaultEvent }}</p>
+        <p>[trackPosition] = {{ trackPosition }}</p>
+      </div>
+    </div>
+  </div>
+</div> -->
+<div class="row">
+  <div class="col-sm-4">
+    <div class="alert alert-secondary" role="alert">
+      movingOffset: {{'{'}} x: {{movingOffset.x}}, y: {{movingOffset.y}} {{'}'}}
+    </div>
+    <div class="alert alert-secondary" role="alert">
+      endOffset: {{'{'}} x: {{endOffset.x}}, y: {{endOffset.y}} {{'}'}}
+    </div>
+  </div>
+  <div class="col-sm-8">
+    <div ngDraggable class="drag-block" (started)="onStart($event)" (stopped)="onStop($event)" (movingOffset)="onMoving($event)"
+      [preventDefaultEvent]="true" (endOffset)="onMoveEnd($event)">
+      <p>Drag me</p>
+      <p>Check check</p>
+    </div>
+  </div>
+</div>

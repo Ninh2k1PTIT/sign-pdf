@@ -14,6 +14,7 @@ import { TabModule, ToolbarModule } from '@syncfusion/ej2-angular-navigations';
 import { DialogModule } from '@syncfusion/ej2-angular-popups';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
+import { AngularDraggableModule } from 'angular2-draggable';
 
 @NgModule({
   declarations: [
@@ -38,7 +39,8 @@ import { NgSelectModule } from '@ng-select/ng-select';
     ButtonModule,
     NumericTextBoxModule,
     NgbModule,
-    NgSelectModule
+    NgSelectModule,
+    AngularDraggableModule
   ],
   providers: [],
   bootstrap: [AppComponent]
