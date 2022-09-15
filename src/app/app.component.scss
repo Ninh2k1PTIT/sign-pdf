@@ -51,3 +51,29 @@
     box-shadow: 5px 5px 10px #efefef;
   }
 }
+
+.element {
+  background-color: blue;
+  border: 2px solid rgb(27, 21, 21);
+}
+.ng-draggable {
+  cursor: grab;
+  background-color: #20a8d8;
+}
+.drag-block-lg {
+  width: 300px;
+  height: 215px;
+  padding-top: 20px;
+  color: #fff;
+  text-align: center;
+  overflow-y: auto;
+}
+.drag-block {
+  width: 200px;
+  height: 200px;
+  background-color: #20a8d8;
+  color: #fff;
+  padding: 75px 0;
+  line-height: 50px;
+  text-align: center;
+}

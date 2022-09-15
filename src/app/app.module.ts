@@ -10,6 +10,8 @@ import { ButtonModule } from '@syncfusion/ej2-angular-buttons';
 import { SignatureModule } from '@syncfusion/ej2-angular-inputs';
 import { ToolbarModule } from '@syncfusion/ej2-angular-navigations';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgSelectModule } from '@ng-select/ng-select';
+import { AngularDraggableModule } from 'angular2-draggable';
 
 @NgModule({
   declarations: [AppComponent, SignaturePadComponent],
@@ -23,6 +25,8 @@ import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
     SignatureModule,
     ButtonModule,
     NgbModule,
+    NgSelectModule,
+    AngularDraggableModule
   ],
   providers: [],
   bootstrap: [AppComponent],

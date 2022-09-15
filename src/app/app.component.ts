@@ -1,5 +1,6 @@
-import { Component, ViewEncapsulation } from '@angular/core';
+import { Component, ViewChild, ViewEncapsulation } from '@angular/core';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { Draggable } from '@syncfusion/ej2-base';
 import {
   NgxExtendedPdfViewerService,
   PdfLoadedEvent,
@@ -37,13 +38,46 @@ export class AppComponent {
     '300%',
     '400%',
   ];
+  draggable = true;
+  useHandle = false;
+  zIndex: any;
+  zIndexMoving: any;
+  preventDefaultEvent = false;
+  trackPosition = true;
+  position: any;
+  movingOffset = { x: 0, y: 0 };
+  endOffset = { x: 0, y: 0 };
 
   list: PdfFile[] = [];
+  @ViewChild('ele', { static: false }) element: any;
+  ngAfterViewInit() {
+    // let draggable: Draggable = new Draggable(this.element.nativeElement, {
+    //   clone: false,
+    // });
+  }
 
   constructor(
     private modalService: NgbModal,
     private pdfService: NgxExtendedPdfViewerService
   ) {}
+
+  onStart(event: any) {
+    console.log('started output:', event);
+  }
+
+  onStop(event: any) {
+    console.log('stopped output:', event);
+  }
+
+  onMoving(event: any) {
+    this.movingOffset.x = event.x;
+    this.movingOffset.y = event.y;
+  }
+
+  onMoveEnd(event: any) {
+    this.endOffset.x = event.x;
+    this.endOffset.y = event.y;
+  }
 
   async inputFile(ev: any) {
     for (const file of ev.target.files) {
