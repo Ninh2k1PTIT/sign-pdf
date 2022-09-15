@@ -1,5 +1,5 @@
-.page-item {
-  max-height: 400px;
+.scroll {
+  max-height: 100vh;
   overflow-y: auto;
 }
 
@@ -22,9 +22,32 @@
 
 .thumbnail {
   margin-top: 20px;
+  position: relative;
 }
 
 .thumbnail-img {
   width: 55%;
   height: 55%;
+}
+
+.signature-tag {
+  position: absolute;
+  height: 10%;
+  width: 14%;
+  top: 7%;
+  left: 17%;
+  z-index: 1;
+  background-color: #77d2ff;
+  border: 1px solid #1a9ee1;
+  color: #292b35;
+  border-radius: 15%;
+}
+
+.sign-info {
+  border-bottom: 1px solid black;
+  cursor: pointer;
+  &:hover {
+    background-color: #efefef;
+    box-shadow: 5px 5px 10px #efefef;
+  }
 }

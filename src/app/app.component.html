@@ -1,106 +1,141 @@
-<div class="row justify-content-center">
-  <div class="col"></div>
-  <div class="col">
-    <div class="d-flex justify-content-center align-items-center">
-      <button type="button" class="btn" (click)="previousPage()">-</button>
-      {{ pageNumber + "/" + totalPages }}
-      <button type="button" class="btn" (click)="nextPage()">+</button>
-    </div>
-  </div>
-  <div class="col"></div>
-</div>
-<div class="row p-2">
-  <div class="col-2">
-    <div class="mb-3">
-      <h5>Tải lên</h5>
-      <input type="file" (change)="inputFile($event)" accept=".pdf" multiple />
-    </div>
-    <div class="mb-3">
-      <h5>Tỉ lệ</h5>
-      <div class="input-group mb-3">
-        <select class="form-select" [(ngModel)]="scale">
-          <option [value]="item" *ngFor="let item of scaleOptions">
-            {{ item }}
-          </option>
-        </select>
+<div class="overflow-hidden">
+  <div class="row justify-content-center">
+    <div class="col"></div>
+    <div class="col">
+      <div class="d-flex justify-content-center align-items-center">
+        <button type="button" class="btn" (click)="previousPage()">-</button>
+        {{ pageNumber + "/" + totalPages }}
+        <button type="button" class="btn" (click)="nextPage()">+</button>
       </div>
     </div>
-
-    <div class="mb-3">
-      <h5>Ký số</h5>
-      <button
-        type="button"
-        class="btn btn-primary"
-        (click)="openSignaturePad(signature)"
-      >
-        Tạo chữ ký
-      </button>
-    </div>
+    <div class="col"></div>
   </div>
-  <div class="col-8">
-    <div id="outerContainer">
-      <div class="pdf-container">
-        <ngx-extended-pdf-viewer
-          [src]="src"
-          [(page)]="pageNumber"
-          [zoom]="scale"
-          [useBrowserLocale]="true"
-          [showToolbar]="false"
-          (pdfLoaded)="pdfLoaded($event)"
-          backgroundColor="none"
-          height="80%"
-          [showPropertiesButton]="true"
-          [showBorders]="false"
-          pageViewMode="single"
-        >
-          ></ngx-extended-pdf-viewer
-        >
-      </div>
-    </div>
-  </div>
-
-  <div class="col-2">
-    <div class="accordion" id="accordionExample">
-      <div *ngFor="let file of files; let i = index" class="accordion-item">
-        <h2 class="accordion-header">
-          <button
-            class="accordion-button collapsed"
-            type="button"
-            data-bs-toggle="collapse"
-            [attr.data-bs-target]="'#item' + i"
-            aria-expanded="false"
-            (click)="fileChange(i)"
-            onclick="this.blur()"
-          >
-            <div class="file-name">
-              {{ file.name }}
+  <div class="row p-2">
+    <div class="col-2">
+      <ul ngbNav #nav="ngbNav" class="nav-tabs">
+        <li [ngbNavItem]="1">
+          <a ngbNavLink>Chức năng</a>
+          <ng-template ngbNavContent>
+            <div class="mb-3">
+              <h5>Tải lên</h5>
+              <input
+                type="file"
+                (change)="inputFile($event)"
+                accept=".pdf"
+                multiple
+              />
             </div>
-          </button>
-        </h2>
-        <div
-          [id]="'item' + i"
-          class="accordion-collapse collapse"
-          data-bs-parent="#accordionExample"
-        >
-          <div class="accordion-body">
-            <div class="page-item">
+            <div class="mb-3">
+              <h5>Tỉ lệ</h5>
+              <div class="input-group mb-3">
+                <select class="form-select" [(ngModel)]="scale">
+                  <option [value]="item" *ngFor="let item of scaleOptions">
+                    {{ item }}
+                  </option>
+                </select>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <h5>Ký số</h5>
+              <button
+                type="button"
+                class="btn btn-primary"
+                (click)="openSignaturePad(signature)"
+              >
+                Tạo chữ ký
+              </button>
+            </div>
+          </ng-template>
+        </li>
+        <li [ngbNavItem]="2">
+          <a ngbNavLink>Vị trí</a>
+          <ng-template ngbNavContent>
+            <div class="scroll">
+              <div *ngFor="let file of list; let i = index">
+                <div
+                  *ngFor="let signature of file.signatures; let j = index"
+                  class="sign-info"
+                  (click)="
+                    selectSignature(i, signature, j); acc.expand('item' + i)
+                  "
+                >
+                  <p>
+                    {{ "Tài liệu: " + file.name }}
+                  </p>
+                  <p>{{ "Trang: " + signature }}</p>
+                </div>
+              </div>
+            </div>
+          </ng-template>
+        </li>
+      </ul>
+      <div [ngbNavOutlet]="nav" class="mt-2"></div>
+    </div>
+    <div class="col-8">
+      <div id="outerContainer">
+        <div class="pdf-container">
+          <ngx-extended-pdf-viewer
+            [src]="src!"
+            [(page)]="pageNumber"
+            [zoom]="scale"
+            [useBrowserLocale]="true"
+            [showToolbar]="false"
+            (pdfLoaded)="pdfLoaded($event)"
+            backgroundColor="none"
+            height="100%"
+            [showPropertiesButton]="true"
+            [showBorders]="false"
+            pageViewMode="single"
+          >
+            ></ngx-extended-pdf-viewer
+          >
+        </div>
+      </div>
+    </div>
+    <div class="col-2">
+      <ngb-accordion
+        [closeOthers]="true"
+        #acc="ngbAccordion"
+        (shown)="scrollToPage(pageNumber)"
+      >
+        <ngb-panel *ngFor="let file of list; let i = index" [id]="'item' + i">
+          <ng-template ngbPanelHeader>
+            <button
+              (click)="fileChange(i)"
+              onclick="this.blur()"
+              ngbPanelToggle
+              class="accordion-button"
+            >
+              <div class="file-name">{{ file.name }}</div>
+            </button>
+          </ng-template>
+          <ng-template ngbPanelContent>
+            <div class="scroll">
               <div
                 class="thumbnail"
-                *ngFor="let thumbnail of thumbnails; let i = index"
+                *ngFor="
+                  let thumbnail of list[fileNumber].thumbnails;
+                  let i = index
+                "
                 (click)="pageNumber = i + 1"
               >
                 <img
-                  class="thumbnail-img"
                   [id]="i"
+                  class="thumbnail-img"
                   [src]="thumbnail"
                   [ngClass]="{ selected: pageNumber == i + 1 }"
                 />
                 <div>{{ i + 1 }}</div>
+                <div
+                  *ngIf="list[fileNumber].signatures.includes(i + 1)"
+                  class="signature-tag"
+                ></div>
               </div>
             </div>
-          </div>
-        </div>
-      </div>
+          </ng-template>
+        </ngb-panel>
+      </ngb-accordion>
     </div>
   </div>
 </div>
@@ -119,11 +154,7 @@
     <app-signature-pad></app-signature-pad>
   </div>
   <div class="modal-footer">
-    <button
-      type="button"
-      class="btn btn-primary"
-      (click)="modal.close('Close click')"
-    >
+    <button type="button" class="btn btn-primary" (click)="createSignature()">
       Tạo
     </button>
     <button

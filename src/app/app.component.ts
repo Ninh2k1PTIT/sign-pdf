@@ -5,6 +5,13 @@ import {
   PdfLoadedEvent,
 } from 'ngx-extended-pdf-viewer';
 
+interface PdfFile {
+  name: string;
+  data: string | ArrayBuffer | null;
+  signatures: number[];
+  thumbnails: string[];
+}
+
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
@@ -12,9 +19,7 @@ import {
   encapsulation: ViewEncapsulation.None,
 })
 export class AppComponent {
-  src: string = '';
-  thumbnails: any = [];
-  files: any[] = [];
+  src: string | ArrayBuffer | null = '';
   totalPages: number = 0;
   pageNumber: number = 0;
   fileNumber: number = 0;
@@ -33,7 +38,7 @@ export class AppComponent {
     '400%',
   ];
 
-  previousItem!: HTMLElement;
+  list: PdfFile[] = [];
 
   constructor(
     private modalService: NgbModal,
@@ -41,20 +46,24 @@ export class AppComponent {
   ) {}
 
   async inputFile(ev: any) {
-    this.files = [];
     for (const file of ev.target.files) {
-      this.files.push(await this.readFile(file));
+      this.list.push(await this.readFile(file));
     }
-    this.src = this.files[0].data;
+    this.src = this.list[0].data;
+    this.pageNumber = 1;
   }
 
-  readFile(
-    file: File
-  ): Promise<{ name: string; data: string | ArrayBuffer | null }> {
+  readFile(file: File): Promise<PdfFile> {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.readAsDataURL(file);
-      reader.onload = () => resolve({ name: file.name, data: reader.result });
+      reader.onload = () =>
+        resolve({
+          name: file.name,
+          data: reader.result,
+          thumbnails: [],
+          signatures: [],
+        });
       reader.onerror = (error) => reject(error);
     });
   }
@@ -62,24 +71,25 @@ export class AppComponent {
   fileChange(fileNumber: number) {
     if (this.fileNumber != fileNumber) {
       this.fileNumber = fileNumber;
-      this.src = this.files[fileNumber].data;
+      this.pageNumber = 1;
+      this.src = this.list[fileNumber].data;
     }
   }
 
   async renderThumbnails() {
-    this.thumbnails = [];
-    for (let i = 0; i < this.totalPages; i++) {
-      await this.pdfService
-        .getPageAsImage(i + 1, { width: 1, height: 1, scale: 0.1 })
-        .then((data) => {
-          this.thumbnails.push(data);
-        });
-    }
+    let currentSize = this.list[this.fileNumber].thumbnails.length;
+    if (currentSize < this.totalPages)
+      for (let i = currentSize; i < this.totalPages; i++) {
+        await this.pdfService
+          .getPageAsImage(i + 1, { width: 1, height: 1, scale: 0.1 })
+          .then((data) => {
+            this.list[this.fileNumber].thumbnails.push(data);
+          });
+      }
   }
 
   pdfLoaded(pdf: PdfLoadedEvent) {
     this.totalPages = pdf.pagesCount;
-    this.pageNumber = 1;
     this.renderThumbnails();
   }
 
@@ -106,4 +116,21 @@ export class AppComponent {
   openSignaturePad(modal: any) {
     this.modalService.open(modal, { size: 'xl' });
   }
+
+  selectSignature(
+    fileNumber: number,
+    pageNumber: number,
+    signatureIndex: number
+  ) {
+    this.fileChange(fileNumber);
+    this.pageNumber = pageNumber;
+    this.scrollToPage(this.pageNumber);
+  }
+
+  createSignature() {
+    this.list[this.fileNumber].signatures.push(this.pageNumber);
+    this.modalService.dismissAll();
+  }
+
+  deleteSignature(fileNumber: number, signatureIndex: number) {}
 }
