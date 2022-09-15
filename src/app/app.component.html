@@ -137,50 +137,6 @@
         </ngb-panel>
       </ngb-accordion>
     </div>
-    <div class="col-2">
-      <ngb-accordion
-        [closeOthers]="true"
-        #acc="ngbAccordion"
-        (shown)="scrollToPage(pageNumber)"
-      >
-        <ngb-panel *ngFor="let file of list; let i = index" [id]="'item' + i">
-          <ng-template ngbPanelHeader>
-            <button
-              (click)="fileChange(i)"
-              onclick="this.blur()"
-              ngbPanelToggle
-              class="accordion-button"
-            >
-              <div class="file-name">{{ file.name }}</div>
-            </button>
-          </ng-template>
-          <ng-template ngbPanelContent>
-            <div class="scroll">
-              <div
-                class="thumbnail"
-                *ngFor="
-                  let thumbnail of list[fileNumber].thumbnails;
-                  let i = index
-                "
-                (click)="pageNumber = i + 1"
-              >
-                <img
-                  [id]="i"
-                  class="thumbnail-img"
-                  [src]="thumbnail"
-                  [ngClass]="{ selected: pageNumber == i + 1 }"
-                />
-                <div>{{ i + 1 }}</div>
-                <div
-                  *ngIf="list[fileNumber].signatures.includes(i + 1)"
-                  class="signature-tag"
-                ></div>
-              </div>
-            </div>
-          </ng-template>
-        </ngb-panel>
-      </ngb-accordion>
-    </div>
   </div>
 </div>
 
