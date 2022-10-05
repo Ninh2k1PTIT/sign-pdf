@@ -12,6 +12,7 @@ import { ToolbarModule } from '@syncfusion/ej2-angular-navigations';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { AngularDraggableModule } from 'angular2-draggable';
+import {DragDropModule} from '@angular/cdk/drag-drop';
 
 @NgModule({
   declarations: [AppComponent, SignaturePadComponent],
@@ -26,7 +27,8 @@ import { AngularDraggableModule } from 'angular2-draggable';
     ButtonModule,
     NgbModule,
     NgSelectModule,
-    AngularDraggableModule
+    AngularDraggableModule,
+    DragDropModule
   ],
   providers: [],
   bootstrap: [AppComponent],

@@ -1,241 +1,155 @@
-<div class="overflow-hidden">
-  <div class="row justify-content-center">
-    <div class="col"></div>
-    <div class="col">
-      <div class="d-flex justify-content-center align-items-center">
-        <button type="button" class="btn" (click)="previousPage()">-</button>
-        {{ pageNumber + "/" + totalPages }}
-        <button type="button" class="btn" (click)="nextPage()">+</button>
-      </div>
+<div class="row justify-content-center">
+  <div class="col"></div>
+  <div class="col">
+    <div class="d-flex justify-content-center align-items-center">
+      <button type="button" class="btn" (click)="previousPage()">-</button>
+      {{ pageNumber + "/" + totalPages }}
+      <button type="button" class="btn" (click)="nextPage()">+</button>
     </div>
-    <div class="col"></div>
   </div>
-  <div class="row p-2">
-    <div class="col-2">
-      <ul ngbNav #nav="ngbNav" class="nav-tabs">
-        <li [ngbNavItem]="1">
-          <a ngbNavLink>Chức năng</a>
-          <ng-template ngbNavContent>
-            <div class="mb-3">
-              <h5>Tải lên</h5>
-              <input
-                type="file"
-                (change)="inputFile($event)"
-                accept=".pdf"
-                multiple
-              />
-            </div>
-            <div class="mb-3">
-              <h5>Tỉ lệ</h5>
-              <div class="input-group mb-3">
-                <select class="form-select" [(ngModel)]="scale">
-                  <option [value]="item" *ngFor="let item of scaleOptions">
-                    {{ item }}
-                  </option>
-                </select>
-              </div>
-            </div>
+  <div class="col"></div>
+</div>
 
-            <div class="mb-3">
-              <h5>Ký số</h5>
-              <button
-                type="button"
-                class="btn btn-primary"
-                (click)="openSignaturePad(signature)"
-              >
-                Tạo chữ ký
-              </button>
+<div class="row p-2">
+  <div class="col-2">
+    <ul ngbNav #nav="ngbNav" class="nav-tabs">
+      <li [ngbNavItem]="1">
+        <a ngbNavLink>Chức năng</a>
+        <ng-template ngbNavContent>
+          <div class="mb-3">
+            <h5>Tải lên</h5>
+            <input
+              type="file"
+              (change)="inputFile($event)"
+              accept=".pdf"
+              multiple
+            />
+          </div>
+          <div class="mb-3">
+            <h5>Tỉ lệ</h5>
+            <div class="input-group mb-3">
+              <select class="form-select" [(ngModel)]="scale">
+                <option [value]="item" *ngFor="let item of scaleOptions">
+                  {{ item }}
+                </option>
+              </select>
             </div>
-          </ng-template>
-        </li>
-        <li [ngbNavItem]="2">
-          <a ngbNavLink>Vị trí</a>
-          <ng-template ngbNavContent>
-            <div class="scroll">
-              <div *ngFor="let file of list; let i = index">
-                <div
-                  *ngFor="let signature of file.signatures; let j = index"
-                  class="sign-info"
-                  (click)="
-                    selectSignature(i, signature, j); acc.expand('item' + i)
-                  "
-                >
-                  <p>
-                    {{ "Tài liệu: " + file.name }}
-                  </p>
-                  <p>{{ "Trang: " + signature }}</p>
-                </div>
+          </div>
+
+          <div class="mb-3">
+            <h5>Ký số</h5>
+            <button
+              type="button"
+              class="btn btn-primary"
+              (click)="openSignaturePad(signature)"
+            >
+              Tạo chữ ký
+            </button>
+          </div>
+        </ng-template>
+      </li>
+      <li [ngbNavItem]="2">
+        <a ngbNavLink>Vị trí</a>
+        <ng-template ngbNavContent>
+          <div class="scroll">
+            <div *ngFor="let file of list; let i = index">
+              <div
+                *ngFor="let signature of file.signatures; let j = index"
+                class="sign-info"
+                (click)="
+                  selectSignature(i, signature.pageNumber, j);
+                  acc.expand('item' + i)
+                "
+              >
+                <p>
+                  {{ "Tài liệu: " + file.name }}
+                </p>
+                <p>{{ "Trang: " + signature.pageNumber }}</p>
+                <p>
+                  {{
+                    "Tọa độ: (X: " + signature.x + ", Y: " + signature.y + ")"
+                  }}
+                </p>
               </div>
             </div>
-          </ng-template>
-        </li>
-      </ul>
-      <div [ngbNavOutlet]="nav" class="mt-2"></div>
-    </div>
-    <div class="col-8">
-      <div id="outerContainer">
-        <div class="pdf-container">
-          <ngx-extended-pdf-viewer
-            [src]="src!"
-            [(page)]="pageNumber"
-            [zoom]="scale"
-            [useBrowserLocale]="true"
-            [showToolbar]="false"
-            (pdfLoaded)="pdfLoaded($event)"
-            backgroundColor="none"
-            height="100%"
-            [showPropertiesButton]="true"
-            [showBorders]="false"
-            pageViewMode="single"
-          >
-            ></ngx-extended-pdf-viewer
-          >
-        </div>
+          </div>
+        </ng-template>
+      </li>
+    </ul>
+    <div [ngbNavOutlet]="nav" class="mt-2"></div>
+  </div>
+  <div class="col-8">
+    <div id="outerContainer">
+      <div class="pdf-container">
+        <ngx-extended-pdf-viewer
+          [src]="src!"
+          [(page)]="pageNumber"
+          [zoom]="scale"
+          [useBrowserLocale]="true"
+          [showToolbar]="false"
+          (pdfLoaded)="pdfLoaded($event)"
+          height="100%"
+          [showPropertiesButton]="true"
+          [showBorders]="false"
+          pageViewMode="multiple"
+          (click)="setSignature($event)"
+          [handTool]="handTool"
+        >
+          ></ngx-extended-pdf-viewer
+        >
       </div>
     </div>
-    <div class="col-2">
-      <ngb-accordion
-        [closeOthers]="true"
-        #acc="ngbAccordion"
-        (shown)="scrollToPage(pageNumber)"
-      >
-        <ngb-panel *ngFor="let file of list; let i = index" [id]="'item' + i">
-          <ng-template ngbPanelHeader>
-            <button
-              (click)="fileChange(i)"
-              onclick="this.blur()"
-              ngbPanelToggle
-              class="accordion-button"
+  </div>
+  <div class="col-2">
+    <ngb-accordion
+      [closeOthers]="true"
+      #acc="ngbAccordion"
+      (shown)="scrollToPage(pageNumber)"
+    >
+      <ngb-panel *ngFor="let file of list; let i = index" [id]="'item' + i">
+        <ng-template ngbPanelHeader>
+          <button
+            (click)="fileChange(i)"
+            onclick="this.blur()"
+            ngbPanelToggle
+            class="accordion-button"
+          >
+            <div class="file-name">{{ file.name }}</div>
+          </button>
+        </ng-template>
+        <ng-template ngbPanelContent>
+          <div class="scroll">
+            <div
+              class="thumbnail"
+              *ngFor="
+                let thumbnail of list[fileNumber].thumbnails;
+                let i = index
+              "
+              (click)="pageNumber = i + 1"
             >
-              <div class="file-name">{{ file.name }}</div>
-            </button>
-          </ng-template>
-          <ng-template ngbPanelContent>
-            <div class="scroll">
+              <img
+                [id]="i"
+                class="thumbnail-img"
+                [src]="thumbnail"
+                [ngClass]="{ selected: pageNumber == i + 1 }"
+              />
+              <div>{{ i + 1 }}</div>
               <div
-                class="thumbnail"
-                *ngFor="
-                  let thumbnail of list[fileNumber].thumbnails;
-                  let i = index
-                "
-                (click)="pageNumber = i + 1"
-              >
-                <img
-                  [id]="i"
-                  class="thumbnail-img"
-                  [src]="thumbnail"
-                  [ngClass]="{ selected: pageNumber == i + 1 }"
-                />
-                <div>{{ i + 1 }}</div>
-                <div
-                  *ngIf="list[fileNumber].signatures.includes(i + 1)"
-                  class="signature-tag"
-                ></div>
-              </div>
+                *ngIf="hasSignature(fileNumber, i + 1)"
+                class="signature-tag"
+              ></div>
             </div>
-          </ng-template>
-        </ngb-panel>
-      </ngb-accordion>
-    </div>
+          </div>
+        </ng-template>
+      </ngb-panel>
+    </ngb-accordion>
   </div>
 </div>
 
 <ng-template #signature let-modal>
-  <div class="modal-header">
-    <h4 class="modal-title"></h4>
-    <button
-      type="button"
-      class="btn-close"
-      aria-label="Close"
-      (click)="modal.dismiss('Cross click')"
-    ></button>
-  </div>
-  <div class="modal-body">
-    <app-signature-pad></app-signature-pad>
-  </div>
-  <div class="modal-footer">
-    <button type="button" class="btn btn-primary" (click)="createSignature()">
-      Tạo
-    </button>
-    <button
-      type="button"
-      class="btn btn-outline-dark"
-      (click)="modal.close('Close click')"
-    >
-      Đóng
-    </button>
-  </div>
+  <app-signature-pad
+    (signatureImage)="setSignatureImage($event)"
+  ></app-signature-pad>
 </ng-template>
-<!-- <div id="container">
-  <div #ele class="element"><p class="drag">Draggable Element</p></div>
-</div> -->
-<!-- <div class="drag-block" ngDraggable>Drag Me</div> -->
-<!-- <div class="row">
-  <div class="col-sm-6">
-    <p><button (click)="draggable = !draggable" class="btn btn-outline-primary">toggle [ngDraggable]</button></p>
-    <p><button (click)="position = position ? undefined : {x: 50, y: 50}" class="btn btn-outline-primary">set [position]</button></p>
-    <p><button (click)="useHandle = !useHandle" class="btn btn-outline-primary">toggle [handle]</button></p>
-    <p><button (click)="zIndex = '1000'" class="btn btn-outline-primary">set [zIndex] to 1000</button></p>
-    <p><button (click)="zIndexMoving = '99999'" class="btn btn-outline-primary">set [zIndexMoving] to 99999</button></p>
-    <p><button (click)="preventDefaultEvent = !preventDefaultEvent" class="btn btn-outline-primary">
-      toggle [preventDefaultEvent]</button>
-    </p>
-    <p><button (click)="trackPosition = !trackPosition" class="btn btn-outline-primary">toggle [trackPosition]</button></p>
-  </div>
-  <div class="col-sm-6">
-    <div *ngIf="useHandle">
-      <div
-        [ngDraggable]="draggable"
-        [position]="position"
-        [zIndex]="zIndex"
-        [zIndexMoving]="zIndexMoving"
-        [handle]="myHandle"
-        [preventDefaultEvent]="preventDefaultEvent"
-        [trackPosition]="trackPosition"
-        class="drag-block-lg">
-        <div #myHandle class="drag-block-handle"> #myHandle </div>
-        <p>[handle]="myHandle"</p>
-        <p>[ngDraggable] = {{ draggable }}</p>
-        <p>[position] = {{ position === undefined ? 'undefined' : position | json }}</p>
-        <p>[zIndex] = {{ zIndex === undefined ? 'undefined' : zIndex }}</p>
-        <p>[zIndexMoving] = {{ zIndexMoving === undefined ? 'undefined' : zIndexMoving }}</p>
-        <p>[preventDefaultEvent] = {{ preventDefaultEvent }}</p>
-        <p>[trackPosition] = {{ trackPosition }}</p>
-      </div>
-    </div>
-    <div *ngIf="!useHandle">
-      <div
-        [ngDraggable]="draggable"
-        [position]="position"
-        [zIndex]="zIndex"
-        [zIndexMoving]="zIndexMoving"
-        [preventDefaultEvent]="preventDefaultEvent"
-        [trackPosition]="trackPosition"
-        class="drag-block-lg">
-        <p>[ngDraggable] = {{ draggable }}</p>
-        <p>[position] = {{ position === undefined ? 'undefined' : position | json }}</p>
-        <p>[zIndex] = {{ zIndex === undefined ? 'undefined' : zIndex }}</p>
-        <p>[zIndexMoving] = {{ zIndexMoving === undefined ? 'undefined' : zIndexMoving }}</p>
-        <p>[preventDefaultEvent] = {{ preventDefaultEvent }}</p>
-        <p>[trackPosition] = {{ trackPosition }}</p>
-      </div>
-    </div>
-  </div>
-</div> -->
-<div class="row">
-  <div class="col-sm-4">
-    <div class="alert alert-secondary" role="alert">
-      movingOffset: {{'{'}} x: {{movingOffset.x}}, y: {{movingOffset.y}} {{'}'}}
-    </div>
-    <div class="alert alert-secondary" role="alert">
-      endOffset: {{'{'}} x: {{endOffset.x}}, y: {{endOffset.y}} {{'}'}}
-    </div>
-  </div>
-  <div class="col-sm-8">
-    <div ngDraggable class="drag-block" (started)="onStart($event)" (stopped)="onStop($event)" (movingOffset)="onMoving($event)"
-      [preventDefaultEvent]="true" (endOffset)="onMoveEnd($event)">
-      <p>Drag me</p>
-      <p>Check check</p>
-    </div>
-  </div>
-</div>
+
+<div class="signature-box" id="drag">Chữ ký số</div>

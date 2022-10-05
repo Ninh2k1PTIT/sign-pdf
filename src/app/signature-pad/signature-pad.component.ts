@@ -1,9 +1,16 @@
-import { Component, ViewEncapsulation, ViewChild } from '@angular/core';
+import {
+  Component,
+  ViewEncapsulation,
+  ViewChild,
+  Output,
+  EventEmitter,
+} from '@angular/core';
 import { getComponent } from '@syncfusion/ej2-base';
 import { SignatureComponent } from '@syncfusion/ej2-angular-inputs';
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';
 import { Button } from '@syncfusion/ej2-buttons';
 import { Signature } from '@syncfusion/ej2-inputs';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
   selector: 'app-signature-pad',
@@ -12,6 +19,7 @@ import { Signature } from '@syncfusion/ej2-inputs';
   encapsulation: ViewEncapsulation.None,
 })
 export class SignaturePadComponent {
+  @Output('signatureImage') public signatureImage = new EventEmitter<string>();
   @ViewChild('signature') signature: SignatureComponent | any;
   public thumbnails: string = '';
   image = '';
@@ -20,6 +28,8 @@ export class SignaturePadComponent {
   fontType = 'open sans bold';
   public colorPicker = ['#000000', 'red', 'blue'];
   public widthSelector = [1, 2, 3];
+
+  constructor(private modalService: NgbModal) {}
 
   public change(): void {
     let signature: Signature = getComponent(
@@ -145,5 +155,14 @@ export class SignaturePadComponent {
 
   chooseWidth(width: number) {
     this.signature.maxStrokeWidth = width;
+  }
+
+  createSignature() {
+    this.signatureImage.emit(this.thumbnails);
+    this.modalService.dismissAll();
+  }
+
+  close() {
+    this.modalService.dismissAll();
   }
 }

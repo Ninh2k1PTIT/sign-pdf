@@ -1,23 +1,17 @@
-import { Component, ViewChild, ViewEncapsulation } from '@angular/core';
+import { Component, HostListener, ViewEncapsulation } from '@angular/core';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { Draggable } from '@syncfusion/ej2-base';
 import {
   NgxExtendedPdfViewerService,
   PdfLoadedEvent,
 } from 'ngx-extended-pdf-viewer';
-
-interface PdfFile {
-  name: string;
-  data: string | ArrayBuffer | null;
-  signatures: number[];
-  thumbnails: string[];
-}
+import { PdfFile } from 'src/models/PdfFile';
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
   encapsulation: ViewEncapsulation.None,
+  host: { class: 'app' },
 })
 export class AppComponent {
   src: string | ArrayBuffer | null = '';
@@ -38,46 +32,15 @@ export class AppComponent {
     '300%',
     '400%',
   ];
-  draggable = true;
-  useHandle = false;
-  zIndex: any;
-  zIndexMoving: any;
-  preventDefaultEvent = false;
-  trackPosition = true;
-  position: any;
-  movingOffset = { x: 0, y: 0 };
-  endOffset = { x: 0, y: 0 };
-
+  openSignature = false;
+  signatureImage = '';
   list: PdfFile[] = [];
-  @ViewChild('ele', { static: false }) element: any;
-  ngAfterViewInit() {
-    // let draggable: Draggable = new Draggable(this.element.nativeElement, {
-    //   clone: false,
-    // });
-  }
+  handTool = true;
 
   constructor(
     private modalService: NgbModal,
     private pdfService: NgxExtendedPdfViewerService
   ) {}
-
-  onStart(event: any) {
-    console.log('started output:', event);
-  }
-
-  onStop(event: any) {
-    console.log('stopped output:', event);
-  }
-
-  onMoving(event: any) {
-    this.movingOffset.x = event.x;
-    this.movingOffset.y = event.y;
-  }
-
-  onMoveEnd(event: any) {
-    this.endOffset.x = event.x;
-    this.endOffset.y = event.y;
-  }
 
   async inputFile(ev: any) {
     for (const file of ev.target.files) {
@@ -161,10 +124,105 @@ export class AppComponent {
     this.scrollToPage(this.pageNumber);
   }
 
-  createSignature() {
-    this.list[this.fileNumber].signatures.push(this.pageNumber);
-    this.modalService.dismissAll();
+  setSignature(ev: any) {
+    if (this.openSignature) {
+      let drag = document.getElementById('drag') as HTMLElement;
+      drag.style.display = 'none';
+      this.openSignature = false;
+
+      if (ev.target?.tagName === 'CANVAS') {
+        let canvasWrapper = ev.target.parentElement as HTMLElement;
+        let page = canvasWrapper.parentElement as HTMLElement;
+        const signatureInfo = {
+          pageNumber: parseInt(page.getAttribute('data-page-number') || ''),
+          x: ev.offsetX,
+          y: ev.offsetY,
+        };
+
+        let img = document.createElement('img') as HTMLImageElement;
+        img.src = this.signatureImage;
+        img.width = 180;
+        img.height = 90;
+
+        let signature = document.createElement('div');
+        signature.appendChild(img);
+        signature.className = 'signature';
+        signature.style.top = signatureInfo.y - img.height / 2 + 'px';
+        signature.style.left = signatureInfo.x - img.width / 2 + 'px';
+
+        canvasWrapper.appendChild(signature);
+        this.list[this.fileNumber].signatures.push(signatureInfo);
+
+        signature.onmousedown = (event) => {
+          this.handTool = false;
+          let shiftX = event.clientX - signature.getBoundingClientRect().left;
+          let shiftY = event.clientY - signature.getBoundingClientRect().top;
+
+          signature.style.position = 'absolute';
+          signature.style.zIndex = '1000';
+          canvasWrapper.append(signature);
+
+          // moves the signature at (pageX, pageY) coordinates
+          // taking initial shifts into account
+          let moveAt = (pageX: number, pageY: number) => {
+            signature.style.left =
+              pageX -
+              shiftX -
+              canvasWrapper.getBoundingClientRect().left +
+              'px';
+            signature.style.top =
+              pageY - shiftY - canvasWrapper.getBoundingClientRect().top + 'px';
+          };
+
+          let onMouseMove = (event: MouseEvent) => {
+            moveAt(event.pageX, event.pageY);
+          };
+          moveAt(event.pageX, event.pageY);
+          // move the signature on mousemove
+          canvasWrapper.addEventListener('mousemove', onMouseMove);
+
+          // drop the signature, remove unneeded handlers
+          signature.onmouseup = () => {
+            this.handTool = true;
+            canvasWrapper.removeEventListener('mousemove', onMouseMove);
+            signature.onmouseup = null;
+          };
+        };
+
+        signature.ondragstart = function () {
+          return false;
+        };
+      }
+    }
   }
 
-  deleteSignature(fileNumber: number, signatureIndex: number) {}
+  hasSignature(fileNumber: number, pageNumber: number) {
+    return this.list[fileNumber].signatures.some(
+      (x) => x.pageNumber == pageNumber
+    );
+  }
+
+  @HostListener('document:mousemove', ['$event'])
+  mousemove(event: MouseEvent) {
+    if (this.openSignature) {
+      let drag = document.getElementById('drag') as HTMLElement;
+      drag.style.display = 'flex';
+      drag.style.top = event.clientY - drag.offsetHeight / 2 + 'px';
+      drag.style.left = event.clientX - drag.offsetWidth / 2 + 'px';
+    }
+  }
+
+  @HostListener('document:mousedown', ['$event'])
+  mousedown(event: MouseEvent) {
+    if (this.openSignature) {
+      let drag = document.getElementById('drag') as HTMLElement;
+      drag.style.display = 'none';
+      this.openSignature = false;
+    }
+  }
+
+  setSignatureImage(ev: any) {
+    this.signatureImage = ev;
+    this.openSignature = true;
+  }
 }

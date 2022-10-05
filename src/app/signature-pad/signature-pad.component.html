@@ -1,217 +1,212 @@
-<ul ngbNav #nav="ngbNav" class="nav nav-pills">
-  <li ngbNavItem>
-    <a ngbNavLink class="d-flex">
-      <span class="d-none d-sm-inline-block">Vẽ</span></a
-    >
-    <ng-template ngbNavContent> </ng-template>
-  </li>
-  <li ngbNavItem>
-    <a ngbNavLink class="d-flex">
-      <span class="d-none d-sm-inline-block">Ảnh</span></a
-    >
-    <ng-template ngbNavContent>
-      <div>Test</div>
-    </ng-template>
-  </li>
-</ul>
-<div [ngbNavOutlet]="nav" class="mt-2"></div>
-<div class="row">
-  <div class="col-6 control-section">
-    <div id="signature-toolbar-control">
-      <ejs-toolbar
-        id="toolbar"
-        (created)="onCreate($event)"
-        (clicked)="clicked($event)"
-        width="100%"
+<div class="modal-header">
+  <h4 class="modal-title"></h4>
+  <button
+    type="button"
+    class="btn-close"
+    aria-label="Close"
+    (click)="close()"
+  ></button>
+</div>
+<div class="modal-body">
+  <ul ngbNav #nav="ngbNav" class="nav nav-pills">
+    <li ngbNavItem>
+      <a ngbNavLink class="d-flex">
+        <span class="d-none d-sm-inline-block">Vẽ</span></a
       >
-        <e-items>
-          <e-item
-            text=" "
-            prefixIcon="e-icons e-undo"
-            tooltipText="Hoàn tác (Ctrl + Z)"
-          ></e-item>
-          <e-item
-            text=" "
-            prefixIcon="e-icons e-redo"
-            tooltipText="Làm lại (Ctrl + Y)"
-          ></e-item>
-          <!-- <e-item type="Separator"></e-item>
-          <e-item
-            tooltipText="Save (Ctrl + S)"
-            type="Button"
-            template='<button id="save-option"></button>'
-          >
-          </e-item>
-          <e-item type="Separator"></e-item>
-          <e-item
-            tooltipText="Màu"
-            template='<input id="stroke-color" type="color"/>'
-          >
-          </e-item>
-          <e-item type="Separator"></e-item>
-          <e-item
-            tooltipText="Background Color"
-            type="Input"
-            template='<input id="bg-color" type="color"/>'
-          ></e-item>
-          <e-item type="Separator"></e-item>
-          <e-item
-            tooltipText="Nét bút"
-            type="Input"
-            template='<input id="stroke-width" type="text"/>'
-          ></e-item> -->
-          <e-item type="Separator"></e-item>
-          <e-item
-            text=" "
-            prefixIcon="e-icons e-trash"
-            tooltipText="Xóa"
-            align="right"
-          ></e-item>
-        </e-items>
-      </ejs-toolbar>
-      <div id="signature-control">
-        <canvas
-          ejs-signature
-          #signature
-          id="signature"
-          [maxStrokeWidth]="1"
-          style="height: 100%; width: 100%"
-          (change)="change()"
-        ></canvas>
+      <ng-template ngbNavContent> </ng-template>
+    </li>
+    <li ngbNavItem>
+      <a ngbNavLink class="d-flex">
+        <span class="d-none d-sm-inline-block">Ảnh</span></a
+      >
+      <ng-template ngbNavContent>
+        <div>Test</div>
+      </ng-template>
+    </li>
+  </ul>
+  <div [ngbNavOutlet]="nav" class="mt-2"></div>
+  <div class="row">
+    <div class="col-6 control-section">
+      <div id="signature-toolbar-control">
+        <ejs-toolbar
+          id="toolbar"
+          (created)="onCreate($event)"
+          (clicked)="clicked($event)"
+          width="100%"
+        >
+          <e-items>
+            <e-item
+              text=" "
+              prefixIcon="e-icons e-undo"
+              tooltipText="Hoàn tác (Ctrl + Z)"
+            ></e-item>
+            <e-item
+              text=" "
+              prefixIcon="e-icons e-redo"
+              tooltipText="Làm lại (Ctrl + Y)"
+            ></e-item>
+            <e-item type="Separator"></e-item>
+            <e-item
+              text=" "
+              prefixIcon="e-icons e-trash"
+              tooltipText="Xóa"
+              align="right"
+            ></e-item>
+          </e-items>
+        </ejs-toolbar>
+        <div id="signature-control">
+          <canvas
+            ejs-signature
+            #signature
+            id="signature"
+            [maxStrokeWidth]="1"
+            style="height: 100%; width: 100%"
+            (change)="change()"
+          ></canvas>
+        </div>
       </div>
-    </div>
 
-    <div class="row">
-      <div class="col stroke-settings">
-        <p>Màu</p>
-        <div
-          *ngFor="let color of colorPicker"
-          class="color-picker-border"
-          [ngStyle]="{
-            border: signature.strokeColor === color ? '1px solid ' + color : ''
-          }"
-          (click)="chooseColor(color)"
-        >
+      <div class="row">
+        <div class="col stroke-settings">
+          <p>Màu</p>
           <div
-            class="color-picker-content"
-            [ngStyle]="{ 'background-color': color }"
-          ></div>
-        </div>
-      </div>
-      <div class="col stroke-settings">
-        <p>Nét bút</p>
-        <div
-          *ngFor="let width of widthSelector"
-          class="width-selector-border"
-          [ngStyle]="{
-            'border-color': signature.maxStrokeWidth == width ? 'black' : ''
-          }"
-          (click)="chooseWidth(width)"
-        >
-          <div
-            class="width-selector-content"
+            *ngFor="let color of colorPicker"
+            class="color-picker-border"
             [ngStyle]="{
-              width: width * 2.5 + 'px',
-              height: width * 2.5 + 'px'
+              border:
+                signature.strokeColor === color ? '1px solid ' + color : ''
             }"
-          ></div>
+            (click)="chooseColor(color)"
+          >
+            <div
+              class="color-picker-content"
+              [ngStyle]="{ 'background-color': color }"
+            ></div>
+          </div>
         </div>
-      </div>
-    </div>
-  </div>
-  <div class="col-6">
-    <h5>Chọn kiểu</h5>
-    <div class="d-flex w-70 border border-primary mt-2">
-      <div class="w-50">
-        <div class="">
-          <input
-            #imageInput
-            type="file"
-            style="display: none"
-            (change)="inputImage($event)"
-          />
-        </div>
-        <div class="h-100">
-          <img
-            class="w-100 h-100"
-            (click)="imageInput.click()"
-            [src]="thumbnails"
-          />
-        </div>
-      </div>
-      <div class="border w-100" [style.color]="color1">
-        <div class="mt-2" id="output-text">
-          <span #para> Ký bởi : </span>
-          <span> Tên người ký </span>
-          <br />
-          <span> Tên tổ chức : </span>
-          <span> </span>
-          <br />
-          <span> Thư điện tử : </span>
-          <span> </span>
-          <br />
-          <span> Thời gian ký : </span>
-          <span>
-            {{ today | date: "dd/MM/yyyy":"+7" }}
-            - {{ today | date: "HH:mm:ss" }} - GMT+7:00
-          </span>
-          <div class="logo">
-            <img
-              [src]="image ? image : 'assets/logo.png'"
-              style="
-                width: 180px;
-                height: 120px;
-                margin-top: 20px;
-                margin-left: 60px;
-              "
-            />
+        <div class="col stroke-settings">
+          <p>Nét bút</p>
+          <div
+            *ngFor="let width of widthSelector"
+            class="width-selector-border"
+            [ngStyle]="{
+              'border-color': signature.maxStrokeWidth == width ? 'black' : ''
+            }"
+            (click)="chooseWidth(width)"
+          >
+            <div
+              class="width-selector-content"
+              [ngStyle]="{
+                width: width * 2.5 + 'px',
+                height: width * 2.5 + 'px'
+              }"
+            ></div>
           </div>
         </div>
       </div>
     </div>
-    <h5 class="mt-2">Tùy chỉnh font</h5>
-    <div class="d-flex">
-      <div class="col-md-2">Định dạng</div>
-      <div class="col-md-8">
-        <div class="flex-grow-1 col-xs-12 col-sm-8 col-md-8">
-          <ng-select
-            [(ngModel)]="fontType"
-            [clearable]="false"
-            [ngModelOptions]="{ standalone: true }"
-            (change)="changeFont($event)"
-          >
-            <ng-option value="open sans bold">
-              <a style="font-family: 'Open Sans Bold'">Open Sans Bold</a>
-            </ng-option>
-            <ng-option value="time new romance">
-              <a style="font-family: 'Times New Roman'">Times New Roman</a>
-            </ng-option>
-            <ng-option value="dejavu sans bold">
-              <a style="font-family: 'DejaVu Sans Bold', sans-serif"
-                >DejaVu Sans Bold</a
-              >
-            </ng-option>
-            <ng-option value="dejavu sans"
-              ><a style="font-family: 'DejaVu Sans'">DejaVu Sans</a>
-            </ng-option>
-            <ng-option value="dejavu sans extralight"
-              ><a style="font-family: 'DejaVu Sans ExtraLight'"
-                >DejaVu Sans ExtraLight</a
-              >
-            </ng-option>
-            <ng-option value="dejavu sans bold oblique">
-              <a style="font-family: 'DejaVu Sans Bold Oblique'"
-                >DejaVu Sans Bold Oblique</a
-              ></ng-option
+    <div class="col-6">
+      <h5>Chọn kiểu</h5>
+      <div class="d-flex w-70 border border-primary mt-2">
+        <div class="w-50">
+          <div class="">
+            <input
+              #imageInput
+              type="file"
+              style="display: none"
+              (change)="inputImage($event)"
+            />
+          </div>
+          <div class="h-100">
+            <img
+              class="w-100 h-100"
+              (click)="imageInput.click()"
+              [src]="thumbnails"
+            />
+          </div>
+        </div>
+        <div class="border w-100" [style.color]="color1">
+          <div class="mt-2" id="output-text">
+            <span #para> Ký bởi : </span>
+            <span> Tên người ký </span>
+            <br />
+            <span> Tên tổ chức : </span>
+            <span> </span>
+            <br />
+            <span> Thư điện tử : </span>
+            <span> </span>
+            <br />
+            <span> Thời gian ký : </span>
+            <span>
+              {{ today | date: "dd/MM/yyyy":"+7" }}
+              - {{ today | date: "HH:mm:ss" }} - GMT+7:00
+            </span>
+            <div class="logo">
+              <img
+                [src]="image ? image : 'assets/logo.png'"
+                style="
+                  width: 180px;
+                  height: 120px;
+                  margin-top: 20px;
+                  margin-left: 60px;
+                "
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+      <h5 class="mt-2">Tùy chỉnh font</h5>
+      <div class="d-flex">
+        <div class="col-md-2">Định dạng</div>
+        <div class="col-md-8">
+          <div class="flex-grow-1 col-xs-12 col-sm-8 col-md-8">
+            <ng-select
+              [(ngModel)]="fontType"
+              [clearable]="false"
+              [ngModelOptions]="{ standalone: true }"
+              (change)="changeFont($event)"
             >
-            <ng-option value="DejaVu Sans Oblique">
-              <a style="font-family: 'DejaVu Sans Oblique'"
-                >DejaVu Sans Oblique</a
-              ></ng-option
-            >
-          </ng-select>
+              <ng-option value="open sans bold">
+                <a style="font-family: 'Open Sans Bold'">Open Sans Bold</a>
+              </ng-option>
+              <ng-option value="time new romance">
+                <a style="font-family: 'Times New Roman'">Times New Roman</a>
+              </ng-option>
+              <ng-option value="dejavu sans bold">
+                <a style="font-family: 'DejaVu Sans Bold', sans-serif"
+                  >DejaVu Sans Bold</a
+                >
+              </ng-option>
+              <ng-option value="dejavu sans"
+                ><a style="font-family: 'DejaVu Sans'">DejaVu Sans</a>
+              </ng-option>
+              <ng-option value="dejavu sans extralight"
+                ><a style="font-family: 'DejaVu Sans ExtraLight'"
+                  >DejaVu Sans ExtraLight</a
+                >
+              </ng-option>
+              <ng-option value="dejavu sans bold oblique">
+                <a style="font-family: 'DejaVu Sans Bold Oblique'"
+                  >DejaVu Sans Bold Oblique</a
+                ></ng-option
+              >
+              <ng-option value="DejaVu Sans Oblique">
+                <a style="font-family: 'DejaVu Sans Oblique'"
+                  >DejaVu Sans Oblique</a
+                ></ng-option
+              >
+            </ng-select>
+          </div>
         </div>
       </div>
     </div>
   </div>
+</div>
+<div class="modal-footer">
+  <button type="button" class="btn btn-primary" (click)="createSignature()">
+    Tạo
+  </button>
+  <button type="button" class="btn btn-outline-dark" (click)="close()">
+    Đóng
+  </button>
 </div>
