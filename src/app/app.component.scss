@@ -52,37 +52,11 @@
   }
 }
 
-.element {
-  background-color: blue;
-  border: 2px solid rgb(27, 21, 21);
-}
-.ng-draggable {
-  cursor: grab;
-  background-color: #20a8d8;
-}
-.drag-block-lg {
-  width: 300px;
-  height: 215px;
-  padding-top: 20px;
-  color: #fff;
-  text-align: center;
-  overflow-y: auto;
-}
-.drag-block {
-  width: 200px;
-  height: 200px;
-  background-color: #20a8d8;
-  color: rgb(175, 175, 175);
-  padding: 75px 0;
-  line-height: 50px;
-  text-align: center;
-}
-
 .signature-box {
   width: 180px;
   height: 90px;
   color: black;
-  display: flex;
+  display: none;
   justify-content: center;
   align-items: center;
   text-align: center;
@@ -90,19 +64,24 @@
   opacity: 0.4;
   border-radius: 4px;
   position: absolute;
-  z-index: 1;
+  z-index: 1000;
   pointer-events: none;
   font-weight: 1000;
   font-size: 22px;
 }
 
-.signature {
-  z-index: 0;
+.resizable {
+  z-index: 1000;
+  width: 10px;
+  height: 10px;
+  background-color: white;
   position: absolute;
+  right: -5px;
+  bottom: -5px;
+  border-radius: 50%;
+  border: 2px solid #008fd3;
   &:hover {
-    cursor: move;
-    border: 1px solid black;
-    border-radius: 5px;
+    cursor: se-resize;
   }
 }
 
@@ -111,4 +90,27 @@
   height: 100%;
   overflow: hidden;
   position: absolute;
+}
+
+.wrap {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  width: 180px;
+  height: 90px;
+  font-weight: 600;
+  font-size: 9px;
+  word-wrap: break-word;
+}
+
+.signature {
+  z-index: 500;
+  position: absolute;
+  border: 3px solid #008fd3;
+  border-radius: 5px;
+  color: #008fd3;
+  display: flex;
+  &:hover {
+    cursor: move;
+  }
 }

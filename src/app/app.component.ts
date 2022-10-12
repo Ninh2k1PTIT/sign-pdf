@@ -36,6 +36,7 @@ export class AppComponent {
   signatureImage = '';
   list: PdfFile[] = [];
   handTool = true;
+  count = 0;
 
   constructor(
     private modalService: NgbModal,
@@ -110,8 +111,207 @@ export class AppComponent {
       ?.scrollIntoView({ behavior: 'auto', block: 'center' });
   }
 
+  //Chỉ hoạt động khi tạo chữ ký
+  @HostListener('document:mousemove', ['$event'])
+  mousemove(event: MouseEvent) {
+    if (this.openSignature) {
+      let drag = document.getElementById('drag') as HTMLElement;
+      drag.style.display = 'flex';
+      drag.style.top = event.clientY - drag.offsetHeight / 2 + 'px';
+      drag.style.left = event.clientX - drag.offsetWidth / 2 + 'px';
+    }
+  }
+
+  //Chỉ hoạt động khi tạo chữ ký
+  @HostListener('document:mousedown', ['$event'])
+  mousedown(event: MouseEvent) {
+    if (this.openSignature) {
+      let drag = document.getElementById('drag') as HTMLElement;
+      drag.style.display = 'none';
+      this.openSignature = false;
+    }
+  }
+
   openSignaturePad(modal: any) {
     this.modalService.open(modal, { size: 'xl' });
+  }
+
+  setSignature(ev: any) {
+    //Khi tạo đc chữ ký thì mới hiện thả chữ ký
+    if (this.openSignature) {
+      let drag = document.getElementById('drag') as HTMLElement;
+      drag.style.display = 'none';
+      this.openSignature = false;
+
+      //Bấm vào trang pdf mới gắn đc chữ ký
+      if (ev.target?.tagName === 'CANVAS') {
+        let canvasWrapper = ev.target.parentElement as HTMLElement;
+        let page = canvasWrapper.parentElement as HTMLElement;
+        const signatureInfo = {
+          id: this.count++,
+          pageNumber: parseInt(page.getAttribute('data-page-number') || ''),
+          x: ev.offsetX,
+          y: ev.offsetY,
+          width: 360,
+          height: 90,
+          fontSize: 9,
+          srcImg: this.signatureImage,
+        };
+
+        //Ảnh chữ ký
+        let img = document.createElement('img') as HTMLImageElement;
+        img.src = signatureInfo.srcImg;
+        img.width = 180;
+        img.height = 90;
+
+        //Thẻ bọc thông tin
+        let wrap = document.createElement('div') as HTMLDivElement;
+        wrap.className = 'wrap';
+
+        //Thẻ ghi thông tin
+        let info = document.createElement('div') as HTMLDivElement;
+        info.innerHTML =
+          '<div>Ký bởi: Nguyễn Việt Hưng</div><div>Tên tổ chức: CMC CIST</div><div>Thư điện tử: nguyentienhaininh@gmail.com</div><div>Ngày ký: 11/10/2022</div>';
+        wrap.appendChild(info);
+
+        //Thẻ chữ ký = Thẻ ảnh + Thẻ bọc
+        let signature = document.createElement('div');
+        signature.appendChild(img);
+        signature.appendChild(wrap);
+        signature.className = 'signature';
+        signature.style.top = signatureInfo.y - img.height / 2 + 'px';
+        signature.style.left = signatureInfo.x - img.width + 'px';
+
+        //Resize
+        let resizable = document.createElement('div') as HTMLDivElement;
+        resizable.className = 'resizable';
+        resizable.onmousedown = (event) => {
+          this.handTool = false;
+          const startY = event.clientY,
+            startX = event.clientX,
+            signatureStartWidth = signature.offsetWidth,
+            signatureStartHeight = signature.offsetHeight,
+            imgStartWidth = img.offsetWidth,
+            imgStartHeight = img.offsetHeight,
+            wrapStartWidth = wrap.offsetWidth,
+            wrapStartHeight = wrap.offsetHeight;
+          let onMouseMove = (event: MouseEvent) => {
+            const width = signatureStartWidth + event.clientX - startX - 6,
+              height = signatureStartHeight + event.clientY - startY - 6;
+            if (width >= 100 && width <= 700) {
+              signature.style.width = width + 'px';
+              img.style.width =
+                imgStartWidth + (event.clientX - startX) / 2 + 'px';
+              wrap.style.width =
+                wrapStartWidth + (event.clientX - startX) / 2 + 'px';
+            }
+            if (height >= 50 && height <= 350) {
+              signature.style.height = height + 'px';
+              img.style.height = imgStartHeight + event.clientY - startY + 'px';
+              wrap.style.height =
+                wrapStartHeight + event.clientY - startY + 'px';
+            }
+            const newHeight = parseInt(signature.style.height.split('px')[0]);
+            const newWidth = parseInt(signature.style.width.split('px')[0]);
+            const fontSize = ((newHeight * newWidth) / (360 * 90)) * 0.5 * 9;
+            wrap.style.fontSize = fontSize + 'px';
+
+            this.list[this.fileNumber].signatures
+              .filter((x) => x.id === signatureInfo.id)
+              .map((x) => {
+                x.width = newWidth;
+                x.height = newHeight;
+                x.fontSize = fontSize;
+                return x;
+              });
+          };
+          canvasWrapper.addEventListener('mousemove', onMouseMove);
+          document.onmouseup = () => {
+            this.handTool = true;
+            canvasWrapper.removeEventListener('mousemove', onMouseMove);
+            resizable.onmouseup = null;
+          };
+        };
+        signature.appendChild(resizable);
+
+        //Di chuyển thẻ chữ ký
+        let move = (event: any) => {
+          this.handTool = false;
+          let shiftX = event.clientX - signature.getBoundingClientRect().left;
+          let shiftY = event.clientY - signature.getBoundingClientRect().top;
+          canvasWrapper.append(signature);
+
+          // moves the signature at (pageX, pageY) coordinates
+          // taking initial shifts into account
+          let moveAt = (pageX: number, pageY: number) => {
+            const left =
+              pageX - shiftX - canvasWrapper.getBoundingClientRect().left;
+            const top =
+              pageY - shiftY - canvasWrapper.getBoundingClientRect().top;
+            if (
+              left >= 5 &&
+              left <= canvasWrapper.offsetWidth - signature.offsetWidth - 5
+            ) {
+              signature.style.left =
+                pageX -
+                shiftX -
+                canvasWrapper.getBoundingClientRect().left +
+                'px';
+              this.list[this.fileNumber].signatures
+                .filter((x) => x.id === signatureInfo.id)
+                .map((x) => {
+                  x.x = left;
+                  return x;
+                });
+            }
+            if (
+              top >= 5 &&
+              top <= canvasWrapper.offsetHeight - signature.offsetHeight - 5
+            ) {
+              signature.style.top =
+                pageY -
+                shiftY -
+                canvasWrapper.getBoundingClientRect().top +
+                'px';
+              this.list[this.fileNumber].signatures
+                .filter((x) => x.id === signatureInfo.id)
+                .map((x) => {
+                  x.y = top;
+                  return x;
+                });
+            }
+          };
+
+          let onMouseMove = (event: MouseEvent) => {
+            moveAt(event.pageX, event.pageY);
+          };
+          moveAt(event.pageX, event.pageY);
+          // move the signature on mousemove
+          canvasWrapper.addEventListener('mousemove', onMouseMove);
+
+          // drop the signature, remove unneeded handlers
+          document.onmouseup = () => {
+            this.handTool = true;
+            canvasWrapper.removeEventListener('mousemove', onMouseMove);
+            img.onmouseup = null;
+          };
+        };
+        img.addEventListener('mousedown', move);
+        wrap.addEventListener('mousedown', move);
+
+        signature.ondragstart = function () {
+          return false;
+        };
+
+        canvasWrapper.appendChild(signature);
+        this.list[this.fileNumber].signatures.push(signatureInfo);
+      }
+    }
+  }
+
+  setSignatureImage(ev: any) {
+    this.signatureImage = ev;
+    this.openSignature = true;
   }
 
   selectSignature(
@@ -124,105 +324,9 @@ export class AppComponent {
     this.scrollToPage(this.pageNumber);
   }
 
-  setSignature(ev: any) {
-    if (this.openSignature) {
-      let drag = document.getElementById('drag') as HTMLElement;
-      drag.style.display = 'none';
-      this.openSignature = false;
-
-      if (ev.target?.tagName === 'CANVAS') {
-        let canvasWrapper = ev.target.parentElement as HTMLElement;
-        let page = canvasWrapper.parentElement as HTMLElement;
-        const signatureInfo = {
-          pageNumber: parseInt(page.getAttribute('data-page-number') || ''),
-          x: ev.offsetX,
-          y: ev.offsetY,
-        };
-
-        let img = document.createElement('img') as HTMLImageElement;
-        img.src = this.signatureImage;
-        img.width = 180;
-        img.height = 90;
-
-        let signature = document.createElement('div');
-        signature.appendChild(img);
-        signature.className = 'signature';
-        signature.style.top = signatureInfo.y - img.height / 2 + 'px';
-        signature.style.left = signatureInfo.x - img.width / 2 + 'px';
-
-        canvasWrapper.appendChild(signature);
-        this.list[this.fileNumber].signatures.push(signatureInfo);
-
-        signature.onmousedown = (event) => {
-          this.handTool = false;
-          let shiftX = event.clientX - signature.getBoundingClientRect().left;
-          let shiftY = event.clientY - signature.getBoundingClientRect().top;
-
-          signature.style.position = 'absolute';
-          signature.style.zIndex = '1000';
-          canvasWrapper.append(signature);
-
-          // moves the signature at (pageX, pageY) coordinates
-          // taking initial shifts into account
-          let moveAt = (pageX: number, pageY: number) => {
-            signature.style.left =
-              pageX -
-              shiftX -
-              canvasWrapper.getBoundingClientRect().left +
-              'px';
-            signature.style.top =
-              pageY - shiftY - canvasWrapper.getBoundingClientRect().top + 'px';
-          };
-
-          let onMouseMove = (event: MouseEvent) => {
-            moveAt(event.pageX, event.pageY);
-          };
-          moveAt(event.pageX, event.pageY);
-          // move the signature on mousemove
-          canvasWrapper.addEventListener('mousemove', onMouseMove);
-
-          // drop the signature, remove unneeded handlers
-          signature.onmouseup = () => {
-            this.handTool = true;
-            canvasWrapper.removeEventListener('mousemove', onMouseMove);
-            signature.onmouseup = null;
-          };
-        };
-
-        signature.ondragstart = function () {
-          return false;
-        };
-      }
-    }
-  }
-
   hasSignature(fileNumber: number, pageNumber: number) {
     return this.list[fileNumber].signatures.some(
       (x) => x.pageNumber == pageNumber
     );
-  }
-
-  @HostListener('document:mousemove', ['$event'])
-  mousemove(event: MouseEvent) {
-    if (this.openSignature) {
-      let drag = document.getElementById('drag') as HTMLElement;
-      drag.style.display = 'flex';
-      drag.style.top = event.clientY - drag.offsetHeight / 2 + 'px';
-      drag.style.left = event.clientX - drag.offsetWidth / 2 + 'px';
-    }
-  }
-
-  @HostListener('document:mousedown', ['$event'])
-  mousedown(event: MouseEvent) {
-    if (this.openSignature) {
-      let drag = document.getElementById('drag') as HTMLElement;
-      drag.style.display = 'none';
-      this.openSignature = false;
-    }
-  }
-
-  setSignatureImage(ev: any) {
-    this.signatureImage = ev;
-    this.openSignature = true;
   }
 }

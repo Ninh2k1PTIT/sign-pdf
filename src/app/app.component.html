@@ -70,6 +70,14 @@
                     "Tọa độ: (X: " + signature.x + ", Y: " + signature.y + ")"
                   }}
                 </p>
+                <p>
+                  {{
+                    "Kích thước: " + signature.width + "x" + signature.height
+                  }}
+                </p>
+                <p>
+                  {{ "Cỡ chữ: " + signature.fontSize }}
+                </p>
               </div>
             </div>
           </div>
@@ -93,6 +101,7 @@
           [showBorders]="false"
           pageViewMode="multiple"
           (click)="setSignature($event)"
+          (pageChange)="scrollToPage($event)"
           [handTool]="handTool"
         >
           ></ngx-extended-pdf-viewer
@@ -118,7 +127,7 @@
           </button>
         </ng-template>
         <ng-template ngbPanelContent>
-          <div class="scroll">
+          <div class="scroll" id="abcd">
             <div
               class="thumbnail"
               *ngFor="
