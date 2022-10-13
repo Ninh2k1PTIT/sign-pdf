@@ -7,4 +7,5 @@ export interface Signature {
   height: number;
   fontSize: number;
   srcImg: string;
+  html?: HTMLElement;
 }

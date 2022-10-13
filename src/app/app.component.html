@@ -103,6 +103,7 @@
           (click)="setSignature($event)"
           (pageChange)="scrollToPage($event)"
           [handTool]="handTool"
+          (pageRender)="a($event)"
         >
           ></ngx-extended-pdf-viewer
         >
@@ -127,7 +128,7 @@
           </button>
         </ng-template>
         <ng-template ngbPanelContent>
-          <div class="scroll" id="abcd">
+          <div class="scroll">
             <div
               class="thumbnail"
               *ngFor="

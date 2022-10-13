@@ -4,6 +4,7 @@ import {
   NgxExtendedPdfViewerService,
   PdfLoadedEvent,
 } from 'ngx-extended-pdf-viewer';
+import { PageRenderEvent } from 'ngx-extended-pdf-viewer/lib/events/page-render-event';
 import { PdfFile } from 'src/models/PdfFile';
 
 @Component({
@@ -154,7 +155,7 @@ export class AppComponent {
           y: ev.offsetY,
           width: 360,
           height: 90,
-          fontSize: 9,
+          fontSize: 8,
           srcImg: this.signatureImage,
         };
 
@@ -167,6 +168,7 @@ export class AppComponent {
         //Thẻ bọc thông tin
         let wrap = document.createElement('div') as HTMLDivElement;
         wrap.className = 'wrap';
+        wrap.style.fontSize = signatureInfo.fontSize + 'px';
 
         //Thẻ ghi thông tin
         let info = document.createElement('div') as HTMLDivElement;
@@ -186,6 +188,7 @@ export class AppComponent {
         let resizable = document.createElement('div') as HTMLDivElement;
         resizable.className = 'resizable';
         resizable.onmousedown = (event) => {
+          let canvasWrapper1 = signature.parentElement as HTMLElement;
           this.handTool = false;
           const startY = event.clientY,
             startX = event.clientX,
@@ -211,9 +214,9 @@ export class AppComponent {
               wrap.style.height =
                 wrapStartHeight + event.clientY - startY + 'px';
             }
-            const newHeight = parseInt(signature.style.height.split('px')[0]);
-            const newWidth = parseInt(signature.style.width.split('px')[0]);
-            const fontSize = ((newHeight * newWidth) / (360 * 90)) * 0.5 * 9;
+            const newHeight = parseInt(wrap.style.height.split('px')[0]);
+            const newWidth = parseInt(wrap.style.width.split('px')[0]);
+            const fontSize = 4 * (1 + (newHeight * newWidth) / (180 * 90));
             wrap.style.fontSize = fontSize + 'px';
 
             this.list[this.fileNumber].signatures
@@ -225,10 +228,10 @@ export class AppComponent {
                 return x;
               });
           };
-          canvasWrapper.addEventListener('mousemove', onMouseMove);
+          canvasWrapper1.addEventListener('mousemove', onMouseMove);
           document.onmouseup = () => {
             this.handTool = true;
-            canvasWrapper.removeEventListener('mousemove', onMouseMove);
+            canvasWrapper1.removeEventListener('mousemove', onMouseMove);
             resizable.onmouseup = null;
           };
         };
@@ -236,26 +239,28 @@ export class AppComponent {
 
         //Di chuyển thẻ chữ ký
         let move = (event: any) => {
+          let canvasWrapper1 = signature.parentElement as HTMLElement;
+
           this.handTool = false;
           let shiftX = event.clientX - signature.getBoundingClientRect().left;
           let shiftY = event.clientY - signature.getBoundingClientRect().top;
-          canvasWrapper.append(signature);
+          canvasWrapper1.append(signature);
 
           // moves the signature at (pageX, pageY) coordinates
           // taking initial shifts into account
           let moveAt = (pageX: number, pageY: number) => {
             const left =
-              pageX - shiftX - canvasWrapper.getBoundingClientRect().left;
+              pageX - shiftX - canvasWrapper1.getBoundingClientRect().left;
             const top =
-              pageY - shiftY - canvasWrapper.getBoundingClientRect().top;
+              pageY - shiftY - canvasWrapper1.getBoundingClientRect().top;
             if (
               left >= 5 &&
-              left <= canvasWrapper.offsetWidth - signature.offsetWidth - 5
+              left <= canvasWrapper1.offsetWidth - signature.offsetWidth - 5
             ) {
               signature.style.left =
                 pageX -
                 shiftX -
-                canvasWrapper.getBoundingClientRect().left +
+                canvasWrapper1.getBoundingClientRect().left +
                 'px';
               this.list[this.fileNumber].signatures
                 .filter((x) => x.id === signatureInfo.id)
@@ -266,12 +271,12 @@ export class AppComponent {
             }
             if (
               top >= 5 &&
-              top <= canvasWrapper.offsetHeight - signature.offsetHeight - 5
+              top <= canvasWrapper1.offsetHeight - signature.offsetHeight - 5
             ) {
               signature.style.top =
                 pageY -
                 shiftY -
-                canvasWrapper.getBoundingClientRect().top +
+                canvasWrapper1.getBoundingClientRect().top +
                 'px';
               this.list[this.fileNumber].signatures
                 .filter((x) => x.id === signatureInfo.id)
@@ -287,12 +292,12 @@ export class AppComponent {
           };
           moveAt(event.pageX, event.pageY);
           // move the signature on mousemove
-          canvasWrapper.addEventListener('mousemove', onMouseMove);
+          canvasWrapper1.addEventListener('mousemove', onMouseMove);
 
           // drop the signature, remove unneeded handlers
           document.onmouseup = () => {
             this.handTool = true;
-            canvasWrapper.removeEventListener('mousemove', onMouseMove);
+            canvasWrapper1.removeEventListener('mousemove', onMouseMove);
             img.onmouseup = null;
           };
         };
@@ -304,7 +309,10 @@ export class AppComponent {
         };
 
         canvasWrapper.appendChild(signature);
-        this.list[this.fileNumber].signatures.push(signatureInfo);
+        this.list[this.fileNumber].signatures.push({
+          ...signatureInfo,
+          html: signature,
+        });
       }
     }
   }
@@ -328,5 +336,16 @@ export class AppComponent {
     return this.list[fileNumber].signatures.some(
       (x) => x.pageNumber == pageNumber
     );
+  }
+
+  a(ev: PageRenderEvent) {
+    let canvas = ev.source.canvas as HTMLElement;
+    let canvasWrapper = canvas.parentElement;
+    const signature = this.list[this.fileNumber].signatures.find(
+      (x) => x.pageNumber == ev.pageNumber
+    );
+    if (signature) {
+      canvasWrapper?.appendChild(signature.html!);
+    }
   }
 }
