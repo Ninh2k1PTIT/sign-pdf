@@ -155,7 +155,7 @@ export class AppComponent {
           y: ev.offsetY,
           width: 360,
           height: 90,
-          fontSize: 8,
+          fontSize: 12,
           srcImg: this.signatureImage,
         };
 
@@ -172,6 +172,7 @@ export class AppComponent {
 
         //Thẻ ghi thông tin
         let info = document.createElement('div') as HTMLDivElement;
+        info.className = 'info';
         info.innerHTML =
           '<div>Ký bởi: Nguyễn Việt Hưng</div><div>Tên tổ chức: CMC CIST</div><div>Thư điện tử: nguyentienhaininh@gmail.com</div><div>Ngày ký: 11/10/2022</div>';
         wrap.appendChild(info);
@@ -216,15 +217,64 @@ export class AppComponent {
             }
             const newHeight = parseInt(wrap.style.height.split('px')[0]);
             const newWidth = parseInt(wrap.style.width.split('px')[0]);
-            const fontSize = 4 * (1 + (newHeight * newWidth) / (180 * 90));
-            wrap.style.fontSize = fontSize + 'px';
+            // const fontSize = 4 * (1 + (newHeight * newWidth) / (180 * 90));
+            // wrap.style.fontSize = fontSize + 'px';
+            console.log(
+              info.offsetHeight,
+              newHeight,
+              info.offsetHeight / newHeight
+            );
+            if (info.offsetHeight > newHeight) {
+              let oldOffsetHeight;
+              console.log('2');
+              while (true) {
+                if (info.offsetHeight / newHeight > 1) {
+                  oldOffsetHeight = info.offsetHeight;
+                  wrap.style.fontSize = signatureInfo.fontSize - 0.25 + 'px';
+                  if (oldOffsetHeight == info.offsetHeight) break;
+                  signatureInfo.fontSize = signatureInfo.fontSize - 0.25;
+                  continue;
+                } else if (info.offsetHeight / newHeight < 0.75) {
+                  wrap.style.fontSize = signatureInfo.fontSize + 0.25 + 'px';
+                  oldOffsetHeight = info.offsetHeight;
+                  if (oldOffsetHeight == info.offsetHeight) break;
+                  signatureInfo.fontSize = signatureInfo.fontSize + 0.25;
+                  console.log(info.offsetHeight);
+                  continue;
+                } else {
+                  break;
+                }
+              }
+            }
+
+            if (info.offsetHeight / newHeight <= 0.75) {
+              let oldOffsetHeight;
+              console.log('1');
+              while (true) {
+                if (info.offsetHeight / newHeight < 0.75) {
+                  wrap.style.fontSize = signatureInfo.fontSize + 0.25 + 'px';
+                  signatureInfo.fontSize = signatureInfo.fontSize + 0.25;
+                  oldOffsetHeight = info.offsetHeight;
+                  if (oldOffsetHeight == info.offsetHeight) break;
+                  continue;
+                } else if (info.offsetHeight / newHeight > 1) {
+                  wrap.style.fontSize = signatureInfo.fontSize - 0.25 + 'px';
+                  signatureInfo.fontSize = signatureInfo.fontSize - 0.25;
+                  oldOffsetHeight = info.offsetHeight;
+                  if (oldOffsetHeight == info.offsetHeight) break;
+                  continue;
+                } else {
+                  break;
+                }
+              }
+            }
 
             this.list[this.fileNumber].signatures
               .filter((x) => x.id === signatureInfo.id)
               .map((x) => {
                 x.width = newWidth;
                 x.height = newHeight;
-                x.fontSize = fontSize;
+                x.fontSize = signatureInfo.fontSize;
                 return x;
               });
           };
