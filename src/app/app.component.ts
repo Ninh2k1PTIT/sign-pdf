@@ -153,22 +153,24 @@ export class AppComponent {
           pageNumber: parseInt(page.getAttribute('data-page-number') || ''),
           x: ev.offsetX,
           y: ev.offsetY,
-          width: 360,
-          height: 90,
-          fontSize: 12,
+          width: 250,
+          height: 100,
+          fontSize: 11,
           srcImg: this.signatureImage,
         };
 
         //Ảnh chữ ký
         let img = document.createElement('img') as HTMLImageElement;
         img.src = signatureInfo.srcImg;
-        img.width = 180;
-        img.height = 90;
+        img.width = signatureInfo.width / 2;
+        img.height = signatureInfo.height;
 
         //Thẻ bọc thông tin
         let wrap = document.createElement('div') as HTMLDivElement;
         wrap.className = 'wrap';
         wrap.style.fontSize = signatureInfo.fontSize + 'px';
+        wrap.style.width = signatureInfo.width / 2 + 'px';
+        wrap.style.height = signatureInfo.height + 'px';
 
         //Thẻ ghi thông tin
         let info = document.createElement('div') as HTMLDivElement;
@@ -200,8 +202,8 @@ export class AppComponent {
             wrapStartWidth = wrap.offsetWidth,
             wrapStartHeight = wrap.offsetHeight;
           let onMouseMove = (event: MouseEvent) => {
-            const width = signatureStartWidth + event.clientX - startX - 6,
-              height = signatureStartHeight + event.clientY - startY - 6;
+            const width = signatureStartWidth + event.clientX - startX - 2,
+              height = signatureStartHeight + event.clientY - startY - 2;
             if (width >= 100 && width <= 700) {
               signature.style.width = width + 'px';
               img.style.width =
@@ -217,64 +219,72 @@ export class AppComponent {
             }
             const newHeight = parseInt(wrap.style.height.split('px')[0]);
             const newWidth = parseInt(wrap.style.width.split('px')[0]);
-            // const fontSize = 4 * (1 + (newHeight * newWidth) / (180 * 90));
-            // wrap.style.fontSize = fontSize + 'px';
+            const ratio =
+              (newHeight * newWidth) /
+              ((signatureInfo.width / 2) * signatureInfo.height); //Tỉ lệ diện tích mới/cũ
+            let fontSize = 0;
+            
+            if (ratio > 1)
+              fontSize = signatureInfo.fontSize * (0.75 + 0.25 * ratio);
+            else fontSize = signatureInfo.fontSize * (0.3 + 0.7 * ratio);
+
+            wrap.style.fontSize = fontSize + 'px';
             console.log(
               info.offsetHeight,
               newHeight,
               info.offsetHeight / newHeight
             );
-            if (info.offsetHeight > newHeight) {
-              let oldOffsetHeight;
-              console.log('2');
-              while (true) {
-                if (info.offsetHeight / newHeight > 1) {
-                  oldOffsetHeight = info.offsetHeight;
-                  wrap.style.fontSize = signatureInfo.fontSize - 0.25 + 'px';
-                  if (oldOffsetHeight == info.offsetHeight) break;
-                  signatureInfo.fontSize = signatureInfo.fontSize - 0.25;
-                  continue;
-                } else if (info.offsetHeight / newHeight < 0.75) {
-                  wrap.style.fontSize = signatureInfo.fontSize + 0.25 + 'px';
-                  oldOffsetHeight = info.offsetHeight;
-                  if (oldOffsetHeight == info.offsetHeight) break;
-                  signatureInfo.fontSize = signatureInfo.fontSize + 0.25;
-                  console.log(info.offsetHeight);
-                  continue;
-                } else {
-                  break;
-                }
-              }
-            }
+            // if (info.offsetHeight > newHeight) {
+            //   let oldOffsetHeight;
+            //   console.log('2');
+            //   while (true) {
+            //     if (info.offsetHeight / newHeight > 1) {
+            //       oldOffsetHeight = info.offsetHeight;
+            //       wrap.style.fontSize = signatureInfo.fontSize - 0.25 + 'px';
+            //       if (oldOffsetHeight == info.offsetHeight) break;
+            //       signatureInfo.fontSize = signatureInfo.fontSize - 0.25;
+            //       continue;
+            //     } else if (info.offsetHeight / newHeight < 0.75) {
+            //       wrap.style.fontSize = signatureInfo.fontSize + 0.25 + 'px';
+            //       oldOffsetHeight = info.offsetHeight;
+            //       if (oldOffsetHeight == info.offsetHeight) break;
+            //       signatureInfo.fontSize = signatureInfo.fontSize + 0.25;
+            //       console.log(info.offsetHeight);
+            //       continue;
+            //     } else {
+            //       break;
+            //     }
+            //   }
+            // }
 
-            if (info.offsetHeight / newHeight <= 0.75) {
-              let oldOffsetHeight;
-              console.log('1');
-              while (true) {
-                if (info.offsetHeight / newHeight < 0.75) {
-                  wrap.style.fontSize = signatureInfo.fontSize + 0.25 + 'px';
-                  signatureInfo.fontSize = signatureInfo.fontSize + 0.25;
-                  oldOffsetHeight = info.offsetHeight;
-                  if (oldOffsetHeight == info.offsetHeight) break;
-                  continue;
-                } else if (info.offsetHeight / newHeight > 1) {
-                  wrap.style.fontSize = signatureInfo.fontSize - 0.25 + 'px';
-                  signatureInfo.fontSize = signatureInfo.fontSize - 0.25;
-                  oldOffsetHeight = info.offsetHeight;
-                  if (oldOffsetHeight == info.offsetHeight) break;
-                  continue;
-                } else {
-                  break;
-                }
-              }
-            }
+            // if (info.offsetHeight / newHeight <= 0.75) {
+            //   let oldOffsetHeight;
+            //   console.log('1');
+            //   while (true) {
+            //     if (info.offsetHeight / newHeight < 0.75) {
+            //       wrap.style.fontSize = signatureInfo.fontSize + 0.25 + 'px';
+            //       signatureInfo.fontSize = signatureInfo.fontSize + 0.25;
+            //       oldOffsetHeight = info.offsetHeight;
+            //       if (oldOffsetHeight == info.offsetHeight) break;
+            //       continue;
+            //     } else if (info.offsetHeight / newHeight > 1) {
+            //       wrap.style.fontSize = signatureInfo.fontSize - 0.25 + 'px';
+            //       signatureInfo.fontSize = signatureInfo.fontSize - 0.25;
+            //       oldOffsetHeight = info.offsetHeight;
+            //       if (oldOffsetHeight == info.offsetHeight) break;
+            //       continue;
+            //     } else {
+            //       break;
+            //     }
+            //   }
+            // }
 
             this.list[this.fileNumber].signatures
               .filter((x) => x.id === signatureInfo.id)
               .map((x) => {
                 x.width = newWidth;
                 x.height = newHeight;
-                x.fontSize = signatureInfo.fontSize;
+                x.fontSize = fontSize;
                 return x;
               });
           };
