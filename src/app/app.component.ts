@@ -1,4 +1,9 @@
-import { Component, HostListener, ViewEncapsulation } from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  HostListener,
+  ViewEncapsulation,
+} from '@angular/core';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import {
   NgxExtendedPdfViewerService,
@@ -19,20 +24,8 @@ export class AppComponent {
   totalPages: number = 0;
   pageNumber: number = 0;
   fileNumber: number = 0;
-  scale: any = 'auto';
-  scaleOptions = [
-    'auto',
-    'page-actual',
-    'page-fit',
-    'page-width',
-    '50%',
-    '100%',
-    '125%',
-    '150%',
-    '200%',
-    '300%',
-    '400%',
-  ];
+  scaleOptions = [0.5, 1, 1.25, 1.5, 2, 3, 4];
+  scale = this.scaleOptions[1];
   openSignature = false;
   signatureImage = '';
   list: PdfFile[] = [];
@@ -41,7 +34,8 @@ export class AppComponent {
 
   constructor(
     private modalService: NgbModal,
-    private pdfService: NgxExtendedPdfViewerService
+    private pdfService: NgxExtendedPdfViewerService,
+    private changeDetection: ChangeDetectorRef
   ) {}
 
   async inputFile(ev: any) {
@@ -148,16 +142,19 @@ export class AppComponent {
       if (ev.target?.tagName === 'CANVAS') {
         let canvasWrapper = ev.target.parentElement as HTMLElement;
         let page = canvasWrapper.parentElement as HTMLElement;
-        const signatureInfo = {
+        let signatureInfo = {
           id: this.count++,
           pageNumber: parseInt(page.getAttribute('data-page-number') || ''),
-          x: ev.offsetX,
-          y: ev.offsetY,
+          x: ev.offsetX - 125,
+          y: ev.offsetY - 50,
           width: 250,
           height: 100,
           fontSize: 11,
           srcImg: this.signatureImage,
         };
+
+        const boundaryLimit = 5;
+        const borderSignature = 2;
 
         //Ảnh chữ ký
         let img = document.createElement('img') as HTMLImageElement;
@@ -175,131 +172,60 @@ export class AppComponent {
         //Thẻ ghi thông tin
         let info = document.createElement('div') as HTMLDivElement;
         info.className = 'info';
-        info.innerHTML =
+        wrap.innerHTML =
           '<div>Ký bởi: Nguyễn Việt Hưng</div><div>Tên tổ chức: CMC CIST</div><div>Thư điện tử: nguyentienhaininh@gmail.com</div><div>Ngày ký: 11/10/2022</div>';
-        wrap.appendChild(info);
 
         //Thẻ chữ ký = Thẻ ảnh + Thẻ bọc
         let signature = document.createElement('div');
-        signature.appendChild(img);
-        signature.appendChild(wrap);
         signature.className = 'signature';
-        signature.style.top = signatureInfo.y - img.height / 2 + 'px';
-        signature.style.left = signatureInfo.x - img.width + 'px';
+        if (signatureInfo.x < boundaryLimit) {
+          signatureInfo.x = boundaryLimit;
+        } else if (
+          signatureInfo.x >
+          canvasWrapper.offsetWidth -
+            signatureInfo.width -
+            boundaryLimit -
+            borderSignature * 2
+        ) {
+          signatureInfo.x =
+            canvasWrapper.offsetWidth -
+            boundaryLimit -
+            borderSignature * 2 -
+            signatureInfo.width;
+        }
 
-        //Resize
+        if (signatureInfo.y < boundaryLimit) {
+          signatureInfo.y = boundaryLimit;
+        } else if (
+          signatureInfo.y >
+          canvasWrapper.offsetHeight -
+            signatureInfo.height -
+            boundaryLimit -
+            borderSignature * 2
+        ) {
+          signatureInfo.y =
+            canvasWrapper.offsetHeight -
+            boundaryLimit -
+            borderSignature * 2 -
+            signatureInfo.height;
+        }
+
+        signature.style.left = signatureInfo.x + 'px';
+        signature.style.top = signatureInfo.y + 'px';
+        signature.style.border = `${borderSignature}px solid #008fd3`;
+
+        //Thẻ Resize
         let resizable = document.createElement('div') as HTMLDivElement;
         resizable.className = 'resizable';
-        resizable.onmousedown = (event) => {
+
+        //Thẻ Close
+        let close = document.createElement('div') as HTMLDivElement;
+        close.className = 'close';
+
+        //Hàm di chuyển chữ ký
+        let move = (event: MouseEvent) => {
           let canvasWrapper1 = signature.parentElement as HTMLElement;
-          this.handTool = false;
-          const startY = event.clientY,
-            startX = event.clientX,
-            signatureStartWidth = signature.offsetWidth,
-            signatureStartHeight = signature.offsetHeight,
-            imgStartWidth = img.offsetWidth,
-            imgStartHeight = img.offsetHeight,
-            wrapStartWidth = wrap.offsetWidth,
-            wrapStartHeight = wrap.offsetHeight;
-          let onMouseMove = (event: MouseEvent) => {
-            const width = signatureStartWidth + event.clientX - startX - 2,
-              height = signatureStartHeight + event.clientY - startY - 2;
-            if (width >= 100 && width <= 700) {
-              signature.style.width = width + 'px';
-              img.style.width =
-                imgStartWidth + (event.clientX - startX) / 2 + 'px';
-              wrap.style.width =
-                wrapStartWidth + (event.clientX - startX) / 2 + 'px';
-            }
-            if (height >= 50 && height <= 350) {
-              signature.style.height = height + 'px';
-              img.style.height = imgStartHeight + event.clientY - startY + 'px';
-              wrap.style.height =
-                wrapStartHeight + event.clientY - startY + 'px';
-            }
-            const newHeight = parseInt(wrap.style.height.split('px')[0]);
-            const newWidth = parseInt(wrap.style.width.split('px')[0]);
-            const ratio =
-              (newHeight * newWidth) /
-              ((signatureInfo.width / 2) * signatureInfo.height); //Tỉ lệ diện tích mới/cũ
-            let fontSize = 0;
-            
-            if (ratio > 1)
-              fontSize = signatureInfo.fontSize * (0.75 + 0.25 * ratio);
-            else fontSize = signatureInfo.fontSize * (0.3 + 0.7 * ratio);
-
-            wrap.style.fontSize = fontSize + 'px';
-            console.log(
-              info.offsetHeight,
-              newHeight,
-              info.offsetHeight / newHeight
-            );
-            // if (info.offsetHeight > newHeight) {
-            //   let oldOffsetHeight;
-            //   console.log('2');
-            //   while (true) {
-            //     if (info.offsetHeight / newHeight > 1) {
-            //       oldOffsetHeight = info.offsetHeight;
-            //       wrap.style.fontSize = signatureInfo.fontSize - 0.25 + 'px';
-            //       if (oldOffsetHeight == info.offsetHeight) break;
-            //       signatureInfo.fontSize = signatureInfo.fontSize - 0.25;
-            //       continue;
-            //     } else if (info.offsetHeight / newHeight < 0.75) {
-            //       wrap.style.fontSize = signatureInfo.fontSize + 0.25 + 'px';
-            //       oldOffsetHeight = info.offsetHeight;
-            //       if (oldOffsetHeight == info.offsetHeight) break;
-            //       signatureInfo.fontSize = signatureInfo.fontSize + 0.25;
-            //       console.log(info.offsetHeight);
-            //       continue;
-            //     } else {
-            //       break;
-            //     }
-            //   }
-            // }
-
-            // if (info.offsetHeight / newHeight <= 0.75) {
-            //   let oldOffsetHeight;
-            //   console.log('1');
-            //   while (true) {
-            //     if (info.offsetHeight / newHeight < 0.75) {
-            //       wrap.style.fontSize = signatureInfo.fontSize + 0.25 + 'px';
-            //       signatureInfo.fontSize = signatureInfo.fontSize + 0.25;
-            //       oldOffsetHeight = info.offsetHeight;
-            //       if (oldOffsetHeight == info.offsetHeight) break;
-            //       continue;
-            //     } else if (info.offsetHeight / newHeight > 1) {
-            //       wrap.style.fontSize = signatureInfo.fontSize - 0.25 + 'px';
-            //       signatureInfo.fontSize = signatureInfo.fontSize - 0.25;
-            //       oldOffsetHeight = info.offsetHeight;
-            //       if (oldOffsetHeight == info.offsetHeight) break;
-            //       continue;
-            //     } else {
-            //       break;
-            //     }
-            //   }
-            // }
-
-            this.list[this.fileNumber].signatures
-              .filter((x) => x.id === signatureInfo.id)
-              .map((x) => {
-                x.width = newWidth;
-                x.height = newHeight;
-                x.fontSize = fontSize;
-                return x;
-              });
-          };
-          canvasWrapper1.addEventListener('mousemove', onMouseMove);
-          document.onmouseup = () => {
-            this.handTool = true;
-            canvasWrapper1.removeEventListener('mousemove', onMouseMove);
-            resizable.onmouseup = null;
-          };
-        };
-        signature.appendChild(resizable);
-
-        //Di chuyển thẻ chữ ký
-        let move = (event: any) => {
-          let canvasWrapper1 = signature.parentElement as HTMLElement;
+          let page1 = canvasWrapper1.parentElement as HTMLElement;
 
           this.handTool = false;
           let shiftX = event.clientX - signature.getBoundingClientRect().left;
@@ -314,8 +240,11 @@ export class AppComponent {
             const top =
               pageY - shiftY - canvasWrapper1.getBoundingClientRect().top;
             if (
-              left >= 5 &&
-              left <= canvasWrapper1.offsetWidth - signature.offsetWidth - 5
+              left >= boundaryLimit &&
+              left <=
+                canvasWrapper1.offsetWidth -
+                  signature.offsetWidth -
+                  boundaryLimit
             ) {
               signature.style.left =
                 pageX -
@@ -323,28 +252,52 @@ export class AppComponent {
                 canvasWrapper1.getBoundingClientRect().left +
                 'px';
               this.list[this.fileNumber].signatures
-                .filter((x) => x.id === signatureInfo.id)
-                .map((x) => {
-                  x.x = left;
-                  return x;
+                .filter((i) => i.id === signatureInfo.id)
+                .map((j) => {
+                  j.x = left;
+                  return j;
                 });
             }
+
+            let currentPage = parseInt(page1.getAttribute('data-page-number')!);
+
             if (
-              top >= 5 &&
-              top <= canvasWrapper1.offsetHeight - signature.offsetHeight - 5
+              top >= canvasWrapper1.offsetHeight + 10 &&
+              currentPage != this.totalPages
             ) {
+              canvasWrapper1.removeEventListener('mousemove', onMouseMove);
+              currentPage += 1;
+              page1 = document.querySelector(
+                `[data-page-number="${currentPage}"]`
+              )!;
+
+              canvasWrapper1 = page1.firstChild as HTMLElement;
+              signature.style.top = '0px';
+              canvasWrapper1.appendChild(signature);
+              canvasWrapper1.addEventListener('mousemove', onMouseMove);
+            } else if (top < 0 && currentPage != 1) {
+              canvasWrapper1.removeEventListener('mousemove', onMouseMove);
+              currentPage -= 1;
+              page1 = document.querySelector(
+                `[data-page-number="${currentPage}"]`
+              )!;
+              canvasWrapper1 = page1.firstChild as HTMLElement;
+              signature.style.top = canvasWrapper1.offsetHeight - top + 'px';
+              canvasWrapper1.appendChild(signature);
+              canvasWrapper1.addEventListener('mousemove', onMouseMove);
+            } else
               signature.style.top =
                 pageY -
                 shiftY -
                 canvasWrapper1.getBoundingClientRect().top +
                 'px';
-              this.list[this.fileNumber].signatures
-                .filter((x) => x.id === signatureInfo.id)
-                .map((x) => {
-                  x.y = top;
-                  return x;
-                });
-            }
+            this.list[this.fileNumber].signatures
+              .filter((i) => i.id === signatureInfo.id)
+              .map((j) => {
+                j.y = top;
+                j.pageNumber = currentPage;
+                return j;
+              });
           };
 
           let onMouseMove = (event: MouseEvent) => {
@@ -353,21 +306,166 @@ export class AppComponent {
           moveAt(event.pageX, event.pageY);
           // move the signature on mousemove
           canvasWrapper1.addEventListener('mousemove', onMouseMove);
+          document.addEventListener('mousemove', onMouseMove);
 
           // drop the signature, remove unneeded handlers
           document.onmouseup = () => {
+            this.list[this.fileNumber].signatures
+              .filter((i) => i.id === signatureInfo.id)
+              .map((j) => {
+                if (
+                  j.y >
+                  canvasWrapper1.offsetHeight -
+                    j.height -
+                    borderSignature * 2 -
+                    boundaryLimit
+                ) {
+                  j.y =
+                    canvasWrapper1.offsetHeight -
+                    j.height -
+                    borderSignature * 2 -
+                    boundaryLimit;
+                } else if (j.y < boundaryLimit) j.y = boundaryLimit;
+                signature.style.top = j.y + 'px';
+
+                return j;
+              });
+            this.changeDetection.detectChanges();
+
             this.handTool = true;
             canvasWrapper1.removeEventListener('mousemove', onMouseMove);
-            img.onmouseup = null;
+            document.removeEventListener('mousemove', onMouseMove);
           };
         };
+
+        //Hàm resize chữ kỹ
+        let resize = (event: MouseEvent) => {
+          let canvasWrapper1 = signature.parentElement as HTMLElement;
+          this.handTool = false;
+          const startY = event.clientY,
+            startX = event.clientX,
+            signatureStartWidth = signature.offsetWidth,
+            signatureStartHeight = signature.offsetHeight,
+            imgStartWidth = img.offsetWidth,
+            imgStartHeight = img.offsetHeight,
+            wrapStartWidth = wrap.offsetWidth,
+            wrapStartHeight = wrap.offsetHeight;
+          let onMouseMove = (event: MouseEvent) => {
+            const width =
+                signatureStartWidth +
+                event.clientX -
+                startX -
+                borderSignature * 2,
+              height =
+                signatureStartHeight +
+                event.clientY -
+                startY -
+                borderSignature * 2;
+            if (width >= 100 && width <= 700) {
+              signature.style.width = width + 'px';
+              img.style.width =
+                imgStartWidth + (event.clientX - startX) / 2 + 'px';
+              wrap.style.width =
+                wrapStartWidth + (event.clientX - startX) / 2 + 'px';
+            }
+            if (height >= 50 && height <= 350) {
+              signature.style.height = height + 'px';
+              img.style.height = imgStartHeight + event.clientY - startY + 'px';
+              wrap.style.height =
+                wrapStartHeight + event.clientY - startY + 'px';
+            }
+            const newHeight = parseInt(signature.style.height.split('px')[0]);
+            const newWidth = parseInt(signature.style.width.split('px')[0]);
+            const ratio =
+              (newHeight * newWidth) /
+              (signatureInfo.width * signatureInfo.height); //Tỉ lệ diện tích mới/cũ
+            let fontSize = 0;
+
+            if (ratio > 1)
+              fontSize = signatureInfo.fontSize * (0.75 + 0.25 * ratio);
+            else fontSize = signatureInfo.fontSize * (0.3 + 0.7 * ratio);
+
+            wrap.style.fontSize = fontSize + 'px';
+
+            this.list[this.fileNumber].signatures
+              .filter((i) => i.id === signatureInfo.id)
+              .map((j) => {
+                j.width = newWidth;
+                j.height = newHeight;
+                j.fontSize = fontSize;
+                return j;
+              });
+          };
+          canvasWrapper1.addEventListener('mousemove', onMouseMove);
+          document.addEventListener('mousemove', onMouseMove);
+          document.onmouseup = () => {
+            this.list[this.fileNumber].signatures
+              .filter((i) => i.id === signatureInfo.id)
+              .map((j) => {
+                if (
+                  j.y >
+                    canvasWrapper1.offsetHeight -
+                      j.height -
+                      borderSignature * 2 -
+                      boundaryLimit &&
+                  j.y < canvasWrapper1.offsetHeight + 10
+                ) {
+                  j.y =
+                    canvasWrapper1.offsetHeight -
+                    j.height -
+                    borderSignature * 2 -
+                    boundaryLimit;
+                } else if (j.y < boundaryLimit) j.y = 5;
+
+                if (
+                  j.x >
+                  canvasWrapper1.offsetWidth -
+                    j.width -
+                    borderSignature * 2 -
+                    boundaryLimit
+                )
+                  j.x =
+                    canvasWrapper1.offsetWidth -
+                    j.width -
+                    borderSignature * 2 -
+                    boundaryLimit;
+                signature.style.top = j.y + 'px';
+                signature.style.left = j.x + 'px';
+
+                return j;
+              });
+            this.handTool = true;
+            canvasWrapper1.removeEventListener('mousemove', onMouseMove);
+            document.removeEventListener('mousemove', onMouseMove);
+            resizable.onmouseup = null;
+          };
+        };
+
+        //Hàm xóa chữ ký
+        let remove = () => {
+          let i = this.list[this.fileNumber].signatures.findIndex(
+            (x) => x.id == signatureInfo.id
+          );
+          this.list[this.fileNumber].signatures.splice(i, 1);
+          signature.remove();
+        };
+
+        //Gắn event
         img.addEventListener('mousedown', move);
         wrap.addEventListener('mousedown', move);
+        resizable.addEventListener('mousedown', resize);
+        close.addEventListener('click', remove);
 
         signature.ondragstart = function () {
           return false;
         };
 
+        //Gắn các thẻ
+        wrap.appendChild(info);
+        signature.appendChild(img);
+        signature.appendChild(wrap);
+        signature.appendChild(resizable);
+        signature.appendChild(close);
         canvasWrapper.appendChild(signature);
         this.list[this.fileNumber].signatures.push({
           ...signatureInfo,
@@ -398,14 +496,14 @@ export class AppComponent {
     );
   }
 
-  a(ev: PageRenderEvent) {
+  pageRender(ev: PageRenderEvent) {
     let canvas = ev.source.canvas as HTMLElement;
     let canvasWrapper = canvas.parentElement;
-    const signature = this.list[this.fileNumber].signatures.find(
+    let signatures = this.list[this.fileNumber].signatures.filter(
       (x) => x.pageNumber == ev.pageNumber
     );
-    if (signature) {
+
+    for (const signature of signatures)
       canvasWrapper?.appendChild(signature.html!);
-    }
   }
 }

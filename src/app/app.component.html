@@ -30,7 +30,7 @@
             <div class="input-group mb-3">
               <select class="form-select" [(ngModel)]="scale">
                 <option [value]="item" *ngFor="let item of scaleOptions">
-                  {{ item }}
+                  {{ item * 100 }}%
                 </option>
               </select>
             </div>
@@ -92,7 +92,7 @@
         <ngx-extended-pdf-viewer
           [src]="src!"
           [(page)]="pageNumber"
-          [zoom]="scale"
+          [zoom]="scale*100"
           [useBrowserLocale]="true"
           [showToolbar]="false"
           (pdfLoaded)="pdfLoaded($event)"
@@ -103,7 +103,7 @@
           (click)="setSignature($event)"
           (pageChange)="scrollToPage($event)"
           [handTool]="handTool"
-          (pageRender)="a($event)"
+          (pageRender)="pageRender($event)"
         >
           ></ngx-extended-pdf-viewer
         >
