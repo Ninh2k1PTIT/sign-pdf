@@ -24,7 +24,7 @@ export class AppComponent {
   totalPages: number = 0;
   pageNumber: number = 0;
   fileNumber: number = 0;
-  scaleOptions = [0.5, 1, 1.25, 1.5, 2, 3, 4];
+  scaleOptions = [0.5, 1, 1.25, 1.5, 1.75, 2];
   scale = this.scaleOptions[1];
   openSignature = false;
   signatureImage = '';
@@ -112,6 +112,8 @@ export class AppComponent {
     if (this.openSignature) {
       let drag = document.getElementById('drag') as HTMLElement;
       drag.style.display = 'flex';
+      drag.style.width = 250 * this.scale + 'px';
+      drag.style.height = 100 * this.scale + 'px';
       drag.style.top = event.clientY - drag.offsetHeight / 2 + 'px';
       drag.style.left = event.clientX - drag.offsetWidth / 2 + 'px';
     }
@@ -145,8 +147,8 @@ export class AppComponent {
         let signatureInfo = {
           id: this.count++,
           pageNumber: parseInt(page.getAttribute('data-page-number') || ''),
-          x: ev.offsetX - 125,
-          y: ev.offsetY - 50,
+          x: ev.offsetX / this.scale - 125,
+          y: ev.offsetY / this.scale - 50,
           width: 250,
           height: 100,
           fontSize: 11,
@@ -159,15 +161,20 @@ export class AppComponent {
         //Ảnh chữ ký
         let img = document.createElement('img') as HTMLImageElement;
         img.src = signatureInfo.srcImg;
-        img.width = signatureInfo.width / 2;
-        img.height = signatureInfo.height;
+        img.width = (signatureInfo.width * this.scale) / 2;
+        img.height = signatureInfo.height * this.scale;
 
         //Thẻ bọc thông tin
         let wrap = document.createElement('div') as HTMLDivElement;
         wrap.className = 'wrap';
-        wrap.style.fontSize = signatureInfo.fontSize + 'px';
-        wrap.style.width = signatureInfo.width / 2 + 'px';
-        wrap.style.height = signatureInfo.height + 'px';
+        if (this.scale > 1)
+          wrap.style.fontSize =
+            signatureInfo.fontSize * (0.75 + 0.25 * this.scale ** 2) + 'px';
+        else
+          wrap.style.fontSize =
+            signatureInfo.fontSize * (0.3 + 0.7 * this.scale ** 2) + 'px';
+        wrap.style.width = (signatureInfo.width * this.scale) / 2 + 'px';
+        wrap.style.height = signatureInfo.height * this.scale + 'px';
 
         //Thẻ ghi thông tin
         let info = document.createElement('div') as HTMLDivElement;
@@ -182,13 +189,13 @@ export class AppComponent {
           signatureInfo.x = boundaryLimit;
         } else if (
           signatureInfo.x >
-          canvasWrapper.offsetWidth -
+          canvasWrapper.offsetWidth / this.scale -
             signatureInfo.width -
             boundaryLimit -
             borderSignature * 2
         ) {
           signatureInfo.x =
-            canvasWrapper.offsetWidth -
+            canvasWrapper.offsetWidth / this.scale -
             boundaryLimit -
             borderSignature * 2 -
             signatureInfo.width;
@@ -198,20 +205,20 @@ export class AppComponent {
           signatureInfo.y = boundaryLimit;
         } else if (
           signatureInfo.y >
-          canvasWrapper.offsetHeight -
+          canvasWrapper.offsetHeight / this.scale -
             signatureInfo.height -
             boundaryLimit -
             borderSignature * 2
         ) {
           signatureInfo.y =
-            canvasWrapper.offsetHeight -
+            canvasWrapper.offsetHeight / this.scale -
             boundaryLimit -
             borderSignature * 2 -
             signatureInfo.height;
         }
 
-        signature.style.left = signatureInfo.x + 'px';
-        signature.style.top = signatureInfo.y + 'px';
+        signature.style.left = signatureInfo.x * this.scale + 'px';
+        signature.style.top = signatureInfo.y * this.scale + 'px';
         signature.style.border = `${borderSignature}px solid #008fd3`;
 
         //Thẻ Resize
@@ -240,21 +247,18 @@ export class AppComponent {
             const top =
               pageY - shiftY - canvasWrapper1.getBoundingClientRect().top;
             if (
-              left >= boundaryLimit &&
+              left >= boundaryLimit * this.scale &&
               left <=
                 canvasWrapper1.offsetWidth -
-                  signature.offsetWidth -
-                  boundaryLimit
+                  signature.clientWidth -
+                  boundaryLimit * this.scale -
+                  borderSignature * 2 * this.scale
             ) {
-              signature.style.left =
-                pageX -
-                shiftX -
-                canvasWrapper1.getBoundingClientRect().left +
-                'px';
+              signature.style.left = left + 'px';
               this.list[this.fileNumber].signatures
                 .filter((i) => i.id === signatureInfo.id)
                 .map((j) => {
-                  j.x = left;
+                  j.x = left / this.scale;
                   return j;
                 });
             }
@@ -294,7 +298,7 @@ export class AppComponent {
             this.list[this.fileNumber].signatures
               .filter((i) => i.id === signatureInfo.id)
               .map((j) => {
-                j.y = top;
+                j.y = top / this.scale;
                 j.pageNumber = currentPage;
                 return j;
               });
@@ -303,31 +307,27 @@ export class AppComponent {
           let onMouseMove = (event: MouseEvent) => {
             moveAt(event.pageX, event.pageY);
           };
-          moveAt(event.pageX, event.pageY);
-          // move the signature on mousemove
-          canvasWrapper1.addEventListener('mousemove', onMouseMove);
-          document.addEventListener('mousemove', onMouseMove);
 
-          // drop the signature, remove unneeded handlers
-          document.onmouseup = () => {
+          let onMouseUp = () => {
             this.list[this.fileNumber].signatures
               .filter((i) => i.id === signatureInfo.id)
               .map((j) => {
                 if (
-                  j.y >
+                  j.y * this.scale >
                   canvasWrapper1.offsetHeight -
-                    j.height -
-                    borderSignature * 2 -
-                    boundaryLimit
+                    signature.clientHeight -
+                    borderSignature * 2 * this.scale -
+                    boundaryLimit * this.scale
                 ) {
                   j.y =
-                    canvasWrapper1.offsetHeight -
-                    j.height -
-                    borderSignature * 2 -
-                    boundaryLimit;
-                } else if (j.y < boundaryLimit) j.y = boundaryLimit;
-                signature.style.top = j.y + 'px';
-
+                    (canvasWrapper1.offsetHeight -
+                      signature.clientHeight -
+                      borderSignature * 2 * this.scale -
+                      boundaryLimit * this.scale) /
+                    this.scale;
+                } else if (j.y * this.scale < boundaryLimit)
+                  j.y = boundaryLimit;
+                signature.style.top = j.y * this.scale + 'px';
                 return j;
               });
             this.changeDetection.detectChanges();
@@ -335,7 +335,15 @@ export class AppComponent {
             this.handTool = true;
             canvasWrapper1.removeEventListener('mousemove', onMouseMove);
             document.removeEventListener('mousemove', onMouseMove);
+            document.removeEventListener('mouseup', onMouseUp);
           };
+          moveAt(event.pageX, event.pageY);
+          // move the signature on mousemove
+          canvasWrapper1.addEventListener('mousemove', onMouseMove);
+          document.addEventListener('mousemove', onMouseMove);
+
+          // drop the signature, remove unneeded handlers
+          document.addEventListener('mouseup', onMouseUp);
         };
 
         //Hàm resize chữ kỹ
@@ -361,14 +369,14 @@ export class AppComponent {
                 event.clientY -
                 startY -
                 borderSignature * 2;
-            if (width >= 100 && width <= 700) {
+            if (width >= 100 * this.scale && width <= 700 * this.scale) {
               signature.style.width = width + 'px';
               img.style.width =
                 imgStartWidth + (event.clientX - startX) / 2 + 'px';
               wrap.style.width =
                 wrapStartWidth + (event.clientX - startX) / 2 + 'px';
             }
-            if (height >= 50 && height <= 350) {
+            if (height >= 50 * this.scale && height <= 350 * this.scale) {
               signature.style.height = height + 'px';
               img.style.height = imgStartHeight + event.clientY - startY + 'px';
               wrap.style.height =
@@ -390,55 +398,58 @@ export class AppComponent {
             this.list[this.fileNumber].signatures
               .filter((i) => i.id === signatureInfo.id)
               .map((j) => {
-                j.width = newWidth;
-                j.height = newHeight;
-                j.fontSize = fontSize;
+                j.width = newWidth / this.scale;
+                j.height = newHeight / this.scale;
+                j.fontSize = fontSize / this.scale;
                 return j;
               });
           };
-          canvasWrapper1.addEventListener('mousemove', onMouseMove);
-          document.addEventListener('mousemove', onMouseMove);
-          document.onmouseup = () => {
+
+          let onMouseUp = () => {
             this.list[this.fileNumber].signatures
               .filter((i) => i.id === signatureInfo.id)
               .map((j) => {
                 if (
-                  j.y >
-                    canvasWrapper1.offsetHeight -
-                      j.height -
-                      borderSignature * 2 -
-                      boundaryLimit &&
-                  j.y < canvasWrapper1.offsetHeight + 10
+                  j.y * this.scale >
+                  canvasWrapper1.offsetHeight -
+                    signature.clientHeight -
+                    borderSignature * 2 * this.scale -
+                    boundaryLimit * this.scale
                 ) {
                   j.y =
-                    canvasWrapper1.offsetHeight -
-                    j.height -
-                    borderSignature * 2 -
-                    boundaryLimit;
-                } else if (j.y < boundaryLimit) j.y = 5;
-
+                    (canvasWrapper1.offsetHeight -
+                      signature.clientHeight -
+                      borderSignature * 2 * this.scale -
+                      boundaryLimit * this.scale) /
+                    this.scale;
+                }
                 if (
-                  j.x >
+                  j.x * this.scale >
                   canvasWrapper1.offsetWidth -
-                    j.width -
-                    borderSignature * 2 -
-                    boundaryLimit
+                    signature.clientWidth -
+                    borderSignature * 2 * this.scale -
+                    boundaryLimit * this.scale
                 )
                   j.x =
-                    canvasWrapper1.offsetWidth -
-                    j.width -
-                    borderSignature * 2 -
-                    boundaryLimit;
-                signature.style.top = j.y + 'px';
-                signature.style.left = j.x + 'px';
+                    (canvasWrapper1.offsetWidth -
+                      signature.clientWidth -
+                      borderSignature * 2 * this.scale -
+                      boundaryLimit * this.scale) /
+                    this.scale;
+                signature.style.top = j.y * this.scale + 'px';
+                signature.style.left = j.x * this.scale + 'px';
 
                 return j;
               });
             this.handTool = true;
             canvasWrapper1.removeEventListener('mousemove', onMouseMove);
             document.removeEventListener('mousemove', onMouseMove);
+            document.removeEventListener('mouseup', onMouseUp);
             resizable.onmouseup = null;
           };
+          canvasWrapper1.addEventListener('mousemove', onMouseMove);
+          document.addEventListener('mousemove', onMouseMove);
+          document.addEventListener('mouseup', onMouseUp);
         };
 
         //Hàm xóa chữ ký
@@ -503,7 +514,25 @@ export class AppComponent {
       (x) => x.pageNumber == ev.pageNumber
     );
 
-    for (const signature of signatures)
+    for (const signature of signatures) {
+      signature.html!.style.top = signature.y * this.scale + 'px';
+      signature.html!.style.left = signature.x * this.scale + 'px';
+      signature.html!.style.width = signature.width * this.scale + 'px';
+      signature.html!.style.height = signature.height * this.scale + 'px';
+
+      let img = signature.html!.children.item(0) as HTMLElement;
+      let wrap = signature.html!.children.item(1) as HTMLElement;
+      img.style.width = (signature.width / 2) * this.scale + 'px';
+      img.style.height = signature.height * this.scale + 'px';
+      wrap.style.width = (signature.width / 2) * this.scale + 'px';
+      wrap.style.height = signature.height * this.scale + 'px';
+      if (this.scale > 1)
+        wrap.style.fontSize =
+          signature.fontSize * (0.75 + 0.25 * this.scale ** 2) + 'px';
+      else
+        wrap.style.fontSize =
+          signature.fontSize * (0.3 + 0.7 * this.scale ** 2) + 'px';
       canvasWrapper?.appendChild(signature.html!);
+    }
   }
 }
